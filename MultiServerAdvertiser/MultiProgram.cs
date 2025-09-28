@@ -78,21 +78,12 @@ namespace SS14ServerAdvertiser
 
                 // Тестируем подключение
                 var connectionOk = await advertiser.TestConnectionAsync();
-                if (!connectionOk && multiConfig.AutoDisableProxyOnError && !string.IsNullOrEmpty(multiConfig.ProxyUrl))
+                if (!connectionOk)
                 {
-                    logger.LogWarning("Прокси не работает, переключаемся на прямое подключение...");
-                    advertiser.DisableProxy();
-                    
-                    // Тестируем снова без прокси
-                    connectionOk = await advertiser.TestConnectionAsync();
-                    if (connectionOk)
-                    {
-                        logger.LogInfo("✓ Прямое подключение работает");
-                    }
-                    else
-                    {
-                        logger.LogError("✗ Прямое подключение тоже не работает");
-                    }
+                    logger.LogError("✗ Подключение через прокси не работает");
+                    logger.LogError("✗ ПРОГРАММА ОСТАНАВЛИВАЕТСЯ - НЕ РАБОТАЕМ БЕЗ ПРОКСИ!");
+                    logger.LogError("✗ Проверьте список прокси в proxy_list.txt");
+                    return;
                 }
                 
                 logger.LogInfo("Адвертайзер запущен. Нажмите Ctrl+C для остановки...");

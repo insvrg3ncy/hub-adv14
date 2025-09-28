@@ -12,6 +12,8 @@
     "MaxRetries": 3,
     "RetryDelayMs": 3000,
     "AutoDisableProxyOnError": false,
+    "ForceProxyOnly": true,
+    "SkipDirectConnection": true,
     "ProxyList": [
       "128.199.202.122:8080",
       "52.193.148.177:3128",

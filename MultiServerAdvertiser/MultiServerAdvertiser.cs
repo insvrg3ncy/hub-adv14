@@ -60,12 +60,14 @@ namespace SS14ServerAdvertiser
                 catch (Exception ex)
                 {
                     _logger.LogError($"Ошибка настройки прокси {proxyUrl}: {ex.Message}");
-                    _logger.LogInfo("Переключаемся на прямое подключение...");
+                    _logger.LogError("✗ НЕ ПЕРЕКЛЮЧАЕМСЯ НА ПРЯМОЕ ПОДКЛЮЧЕНИЕ - ТОЛЬКО ПРОКСИ!");
+                    throw new InvalidOperationException($"Прокси {proxyUrl} не работает: {ex.Message}");
                 }
             }
             else
             {
-                _logger.LogInfo("Прокси не настроен, используется прямое подключение");
+                _logger.LogError("✗ ПРОКСИ НЕ НАСТРОЕН - ПРОГРАММА НЕ РАБОТАЕТ БЕЗ ПРОКСИ!");
+                throw new InvalidOperationException("Прокси не настроен - программа работает только через прокси!");
             }
 
             var client = new HttpClient(handler);
