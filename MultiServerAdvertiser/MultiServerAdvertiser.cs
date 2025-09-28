@@ -146,6 +146,12 @@ namespace SS14ServerAdvertiser
             catch (Exception ex)
             {
                 _logger.LogError($"✗ Ошибка при тестировании подключения: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    _logger.LogError($"  └─ Внутренняя ошибка: {ex.InnerException.Message}");
+                }
+                _logger.LogError($"  └─ Тип ошибки: {ex.GetType().Name}");
+                _logger.LogError($"  └─ Используемый прокси: {_config.ProxyUrl}");
                 return false;
             }
         }

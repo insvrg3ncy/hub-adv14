@@ -80,10 +80,38 @@ namespace SS14ServerAdvertiser
                 var connectionOk = await advertiser.TestConnectionAsync();
                 if (!connectionOk)
                 {
-                    logger.LogError("✗ Подключение через прокси не работает");
-                    logger.LogError("✗ ПРОГРАММА ОСТАНАВЛИВАЕТСЯ - НЕ РАБОТАЕМ БЕЗ ПРОКСИ!");
-                    logger.LogError("✗ Проверьте список прокси в proxy_list.txt");
-                    return;
+                    logger.LogWarning("⚠ Первый прокси не работает, пробуем другие...");
+                    
+                    // Пробуем другие прокси из списка
+                    var workingProxy = await advertiser.FindWorkingProxyAsync();
+                    if (workingProxy != null)
+                    {
+                        logger.LogInfo($"✓ Найден рабочий прокси: {workingProxy}");
+                        advertiser.SwitchToProxy(workingProxy);
+                        
+                        // Тестируем снова
+                        connectionOk = await advertiser.TestConnectionAsync();
+                        if (connectionOk)
+                        {
+                            logger.LogInfo("✓ Подключение через новый прокси работает!");
+                        }
+                        else
+                        {
+                            logger.LogError("✗ Даже новый прокси не работает");
+                        }
+                    }
+                    else
+                    {
+                        logger.LogError("✗ НЕ НАЙДЕНО РАБОЧИХ ПРОКСИ - ПРОГРАММА ОСТАНАВЛИВАЕТСЯ!");
+                        logger.LogError("✗ Проверьте список прокси в proxy_list.txt");
+                        return;
+                    }
+                    
+                    if (!connectionOk)
+                    {
+                        logger.LogError("✗ ПРОГРАММА ОСТАНАВЛИВАЕТСЯ - НЕ РАБОТАЕМ БЕЗ ПРОКСИ!");
+                        return;
+                    }
                 }
                 
                 logger.LogInfo("Адвертайзер запущен. Нажмите Ctrl+C для остановки...");
