@@ -123,7 +123,7 @@ namespace SS14ServerAdvertiser
                 _logger.LogInfo("Тестируем подключение к хабу...");
                 
                 // Пробуем простой GET запрос к хабу
-                var testClient = CreateHttpClient();
+                var testClient = CreateHttpClient(_config.ProxyUrl);
                 var response = await testClient.GetAsync($"{_hubUrl}/api/servers");
                 testClient.Dispose();
                 
@@ -364,7 +364,7 @@ namespace SS14ServerAdvertiser
         {
             try
             {
-                var switchClient = CreateHttpClient();
+                var switchClient = CreateHttpClient(_config.ProxyUrl);
                 var response = await switchClient.GetAsync($"{_hubUrl.Replace("hub.spacestation14.com", "localhost:1218")}/switch?id={serverId}");
                 switchClient.Dispose();
                 if (response.IsSuccessStatusCode)
@@ -466,7 +466,7 @@ namespace SS14ServerAdvertiser
         {
             try
             {
-                var ipClient = CreateHttpClient();
+                var ipClient = CreateHttpClient(_config.ProxyUrl);
                 var response = await ipClient.GetStringAsync("https://api.ipify.org?format=json");
                 ipClient.Dispose();
                 var json = JsonSerializer.Deserialize<JsonElement>(response);
@@ -599,7 +599,7 @@ namespace SS14ServerAdvertiser
             try
             {
                 var statusUrl = GetServerStatusUrl(serverAddress);
-                var testClient = CreateHttpClient();
+                var testClient = CreateHttpClient(_config.ProxyUrl);
                 var response = await testClient.GetAsync(statusUrl);
                 testClient.Dispose();
                 return response.IsSuccessStatusCode;
