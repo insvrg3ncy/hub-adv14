@@ -6,7 +6,7 @@
     "AdvertisementIntervalMinutes": 2,
     "RequestTimeoutSeconds": 30,
     "CheckServerAvailability": false,
-    "ProxyUrl": "",
+    "ProxyUrl": "128.199.202.122:8080",
     "ProxyUsername": "",
     "ProxyPassword": "",
     "MaxRetries": 3,
