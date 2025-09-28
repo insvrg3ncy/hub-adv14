@@ -431,6 +431,66 @@ namespace SS14ServerAdvertiser
         }
 
         /// <summary>
+        /// Удаляет нерабочий прокси из списка
+        /// </summary>
+        public void RemoveFailedProxy(string proxyUrl)
+        {
+            if (_workingProxies.Remove(proxyUrl))
+            {
+                _logger.LogWarning($"✗ Удаляем нерабочий прокси: {proxyUrl}");
+                _logger.LogInfo($"Осталось рабочих прокси: {_workingProxies.Count}");
+                
+                // Сбрасываем индекс если он выходит за границы
+                if (_currentProxyIndex >= _workingProxies.Count)
+                {
+                    _currentProxyIndex = 0;
+                }
+                
+                // Если прокси закончились, останавливаем программу
+                if (_workingProxies.Count == 0)
+                {
+                    _logger.LogError("✗ ВСЕ ПРОКСИ НЕРАБОЧИЕ - ПРОГРАММА ОСТАНАВЛИВАЕТСЯ!");
+                    Environment.Exit(1);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Проверяет и удаляет нерабочие прокси из основного списка
+        /// </summary>
+        public async Task CleanupFailedProxiesAsync()
+        {
+            if (_config.ProxyList == null || !_config.ProxyList.Any())
+                return;
+
+            _logger.LogInfo("Проверяем и удаляем нерабочие прокси из основного списка...");
+            
+            var tasks = _config.ProxyList.Select(async proxyUrl =>
+            {
+                try
+                {
+                    using var testClient = CreateTestHttpClient(proxyUrl);
+                    var response = await testClient.GetAsync($"{_hubUrl}/api/servers");
+                    return response.IsSuccessStatusCode ? proxyUrl : null;
+                }
+                catch
+                {
+                    return null;
+                }
+            });
+
+            var results = await Task.WhenAll(tasks);
+            var workingProxies = results.Where(r => r != null).ToList();
+            
+            if (workingProxies.Count != _config.ProxyList.Count)
+            {
+                var removedCount = _config.ProxyList.Count - workingProxies.Count;
+                _logger.LogInfo($"✓ Удалено {removedCount} нерабочих прокси из основного списка");
+                _config.ProxyList = workingProxies;
+            }
+        }
+
+        /// <summary>
         /// Загружает список прокси из файла
         /// </summary>
         public void LoadProxiesFromFile()
@@ -582,6 +642,12 @@ namespace SS14ServerAdvertiser
 
         private async void AdvertiseAllServers(object state)
         {
+            // Периодически очищаем нерабочие прокси (каждые 10 циклов)
+            if (DateTime.UtcNow.Minute % 10 == 0)
+            {
+                await CleanupFailedProxiesAsync();
+            }
+            
             // Переключаемся на следующий прокси перед каждой рекламой
             if (_workingProxies.Count > 1)
             {
@@ -666,6 +732,12 @@ namespace SS14ServerAdvertiser
                     catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
                     {
                         _logger.LogError($"✗ Таймаут при рекламе {server.DisplayName} (попытка {attempt}/{maxRetries}): {ex.Message}");
+                        
+                        // Если это последняя попытка, удаляем прокси с таймаутом
+                        if (attempt == maxRetries)
+                        {
+                            RemoveFailedProxy(_config.ProxyUrl);
+                        }
                     }
                     catch (HttpRequestException ex)
                     {
@@ -680,7 +752,16 @@ namespace SS14ServerAdvertiser
                                 ex.InnerException.Message.Contains("404"))
                             {
                                 _logger.LogWarning($"  └─ Прокси возвращает ошибку {ex.InnerException.Message.Split(' ').FirstOrDefault(s => s.Contains("502") || s.Contains("503") || s.Contains("404"))}");
+                                
+                                // Удаляем нерабочий прокси
+                                RemoveFailedProxy(_config.ProxyUrl);
                             }
+                        }
+                        
+                        // Если это последняя попытка и ошибка связана с прокси, удаляем его
+                        if (attempt == maxRetries)
+                        {
+                            RemoveFailedProxy(_config.ProxyUrl);
                         }
                     }
                     catch (Exception ex)
