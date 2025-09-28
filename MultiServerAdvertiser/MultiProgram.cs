@@ -63,42 +63,13 @@ namespace SS14ServerAdvertiser
                 if (multiConfig.AutoTestProxies && multiConfig.ProxyList != null && multiConfig.ProxyList.Any())
                 {
                     logger.LogInfo("Автоматически тестируем прокси...");
-                    var workingProxy = await advertiser.FindWorkingProxyAsync();
+                    var workingProxies = await advertiser.FindAllWorkingProxiesAsync();
                     
-                    if (workingProxy != null)
+                    if (workingProxies != null && workingProxies.Any())
                     {
-                        logger.LogInfo($"Переключаемся на рабочий прокси: {workingProxy}");
-                        advertiser.SwitchToProxy(workingProxy);
-                    }
-                    else
-                    {
-                        logger.LogWarning("Рабочий прокси не найден, используем текущий");
-                    }
-                }
-
-                // Тестируем подключение
-                var connectionOk = await advertiser.TestConnectionAsync();
-                if (!connectionOk)
-                {
-                    logger.LogWarning("⚠ Первый прокси не работает, пробуем другие...");
-                    
-                    // Пробуем другие прокси из списка
-                    var workingProxy = await advertiser.FindWorkingProxyAsync();
-                    if (workingProxy != null)
-                    {
-                        logger.LogInfo($"✓ Найден рабочий прокси: {workingProxy}");
-                        advertiser.SwitchToProxy(workingProxy);
-                        
-                        // Тестируем снова
-                        connectionOk = await advertiser.TestConnectionAsync();
-                        if (connectionOk)
-                        {
-                            logger.LogInfo("✓ Подключение через новый прокси работает!");
-                        }
-                        else
-                        {
-                            logger.LogError("✗ Даже новый прокси не работает");
-                        }
+                        logger.LogInfo($"✓ Найдено {workingProxies.Count} рабочих прокси, используем все по очереди");
+                        advertiser.SetWorkingProxies(workingProxies);
+                        advertiser.SwitchToNextProxy();
                     }
                     else
                     {
@@ -106,12 +77,15 @@ namespace SS14ServerAdvertiser
                         logger.LogError("✗ Проверьте список прокси в proxy_list.txt");
                         return;
                     }
-                    
-                    if (!connectionOk)
-                    {
-                        logger.LogError("✗ ПРОГРАММА ОСТАНАВЛИВАЕТСЯ - НЕ РАБОТАЕМ БЕЗ ПРОКСИ!");
-                        return;
-                    }
+                }
+
+                // Тестируем подключение с первым прокси
+                var connectionOk = await advertiser.TestConnectionAsync();
+                if (!connectionOk)
+                {
+                    logger.LogError("✗ ПОДКЛЮЧЕНИЕ НЕ РАБОТАЕТ - ПРОГРАММА ОСТАНАВЛИВАЕТСЯ!");
+                    logger.LogError("✗ Проверьте список прокси в proxy_list.txt");
+                    return;
                 }
                 
                 logger.LogInfo("Адвертайзер запущен. Нажмите Ctrl+C для остановки...");

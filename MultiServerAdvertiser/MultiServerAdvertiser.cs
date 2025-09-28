@@ -336,6 +336,101 @@ namespace SS14ServerAdvertiser
         }
 
         /// <summary>
+        /// Находит ВСЕ рабочие прокси
+        /// </summary>
+        public async Task<List<string>> FindAllWorkingProxiesAsync()
+        {
+            if (_config.ProxyList == null || !_config.ProxyList.Any())
+            {
+                _logger.LogWarning("Список прокси пуст");
+                return new List<string>();
+            }
+
+            _logger.LogInfo($"Тестируем {_config.ProxyList.Count} прокси на доступность и возможность рекламы...");
+
+            var tasks = _config.ProxyList.Select(async proxyUrl =>
+            {
+                try
+                {
+                    _logger.LogInfo($"Тестируем прокси: {proxyUrl}");
+                    
+                    using var testClient = CreateTestHttpClient(proxyUrl);
+                    
+                    // Сначала проверяем доступность хаба
+                    var serversResponse = await testClient.GetAsync($"{_hubUrl}/api/servers");
+                    if (!serversResponse.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning($"✗ Прокси не может получить список серверов: {proxyUrl} (статус: {serversResponse.StatusCode})");
+                        return null;
+                    }
+                    
+                    // Теперь проверяем возможность рекламы
+                    var canAdvertise = await TestProxyAdvertisementAsync(testClient, proxyUrl);
+                    if (canAdvertise)
+                    {
+                        _logger.LogInfo($"✓ Прокси работает и может рекламировать: {proxyUrl}");
+                        return proxyUrl;
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"✗ Прокси заблокирован для рекламы: {proxyUrl}");
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"✗ Прокси не работает: {proxyUrl} - {ex.Message}");
+                    return null;
+                }
+            });
+
+            var results = await Task.WhenAll(tasks);
+            var workingProxies = results.Where(r => r != null).ToList();
+
+            if (workingProxies.Count > 0)
+            {
+                _logger.LogInfo($"✓ Найдено {workingProxies.Count} рабочих прокси для рекламы:");
+                foreach (var proxy in workingProxies)
+                {
+                    _logger.LogInfo($"  - {proxy}");
+                }
+            }
+            else
+            {
+                _logger.LogWarning("✗ Рабочие прокси не найдены");
+            }
+
+            return workingProxies;
+        }
+
+        /// <summary>
+        /// Устанавливает список рабочих прокси
+        /// </summary>
+        public void SetWorkingProxies(List<string> proxies)
+        {
+            _workingProxies = proxies ?? new List<string>();
+            _currentProxyIndex = 0;
+        }
+
+        /// <summary>
+        /// Переключается на следующий прокси из списка
+        /// </summary>
+        public void SwitchToNextProxy()
+        {
+            if (_workingProxies.Count == 0)
+            {
+                _logger.LogError("✗ Нет рабочих прокси для переключения");
+                return;
+            }
+
+            _currentProxyIndex = (_currentProxyIndex + 1) % _workingProxies.Count;
+            var nextProxy = _workingProxies[_currentProxyIndex];
+            
+            _logger.LogInfo($"Переключаемся на следующий прокси: {nextProxy} ({_currentProxyIndex + 1}/{_workingProxies.Count})");
+            SwitchToProxy(nextProxy);
+        }
+
+        /// <summary>
         /// Загружает список прокси из файла
         /// </summary>
         public void LoadProxiesFromFile()
@@ -487,6 +582,12 @@ namespace SS14ServerAdvertiser
 
         private async void AdvertiseAllServers(object state)
         {
+            // Переключаемся на следующий прокси перед каждой рекламой
+            if (_workingProxies.Count > 1)
+            {
+                SwitchToNextProxy();
+            }
+            
             // Рекламируем все серверы одновременно параллельно
             var tasks = _servers.Where(s => s.IsActive).Select(AdvertiseServerAsync);
             await Task.WhenAll(tasks);
