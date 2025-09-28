@@ -343,19 +343,19 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
         """Возвращает статус сервера в зависимости от порта"""
         # Список названий серверов
         server_names = [
-            "https://discord.gg/HSC6Frb6ma | MakeSS14GreatAgain88 | Це пранк друзья",
-            "https://discord.gg/HSC6Frb6ma | PINK VULP SUPREMACY", 
-            "https://discord.gg/HSC6Frb6ma | SAY MEWO IN OUR DISCORD PWWEASE~~",
-            "https://discord.gg/HSC6Frb6ma | бля какая же ыы14 хуета",
-            "https://discord.gg/HSC6Frb6ma | алё алё пиздены приём",
-            "https://discord.gg/HSC6Frb6ma | слава вульпам",
-            "https://discord.gg/HSC6Frb6ma | боже храни вульп",
-            "https://discord.gg/HSC6Frb6ma | дворфы худшая раса, сосите",
-            "https://discord.gg/HSC6Frb6ma | дехабните пж",
-            "https://discord.gg/HSC6Frb6ma | мяумяу",
-            "https://discord.gg/HSC6Frb6ma | мурмур",
-            "https://discord.gg/HSC6Frb6ma | что ещё написать",
-            "https://discord.gg/HSC6Frb6ma | я хз"
+            "discord.gg/HSC6Frb6ma | MakeSS14GreatAgain88 | Це пранк друзья",
+            "discord.gg/HSC6Frb6ma | PINK VULP SUPREMACY", 
+            "discord.gg/HSC6Frb6ma | SAY MEWO IN OUR DISCORD PWWEASE~~",
+            "discord.gg/HSC6Frb6ma | бля какая же ыы14 хуета",
+            "discord.gg/HSC6Frb6ma | алё алё пиздены приём",
+            "discord.gg/HSC6Frb6ma | слава вульпам",
+            "discord.gg/HSC6Frb6ma | боже храни вульп",
+            "discord.gg/HSC6Frb6ma | дворфы худшая раса, сосите",
+            "discord.gg/HSC6Frb6ma | дехабните пж",
+            "discord.gg/HSC6Frb6ma | мяумяу",
+            "discord.gg/HSC6Frb6ma | мурмур",
+            "discord.gg/HSC6Frb6ma | что ещё написать",
+            "discord.gg/HSC6Frb6ma | я хз"
         ]
         
         # Список карт
@@ -407,11 +407,11 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
                 "manifest_download_url": "https://cdn.station14.ru/fork/syndicate-public/version/e301f52e655c57d6df4a0475e75eb4b24f64e0e4/download",
                 "manifest_hash": "9AF4E8A392C87A4BDB60CDA83A59AFCE4DEF439FF44E6094DF077295A6964C7E"
             },
-            "desc": f"https://discord.gg/HSC6Frb6ma | Server {port-1211} | SS14 Multi-Server",
+            "desc": f"discord.gg/HSC6Frb6ma | Server {port-1211} | SS14 Multi-Server",
             "links": [
                 {
                     "name": "Discord",
-                    "url": "https://discord.gg/HSC6Frb6ma"
+                    "url": "discord.gg/HSC6Frb6ma"
                 }
             ]
         }
@@ -454,7 +454,7 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
             "links": [
                 {
                     "name": "Discord",
-                    "url": "https://discord.gg/HSC6Frb6ma"
+                    "url": "discord.gg/HSC6Frb6ma"
                 }
             ]
         }

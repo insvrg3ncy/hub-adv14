@@ -2,21 +2,21 @@
   "servers": [
     {
       "id": "server_1",
-      "name": "https://discord.gg/HSC6Frb6ma | MakeSS14GreatAgain88 | Це пранк друзья",
+      "name": "discord.gg/HSC6Frb6ma | MakeSS14GreatAgain88 | Це пранк друзья",
       "port": 1212,
       "status_file": "status.json",
       "info_file": "info.json"
     },
     {
       "id": "server_2",
-      "name": "https://discord.gg/HSC6Frb6ma | PINK VULP SUPREMACY",
+      "name": "discord.gg/HSC6Frb6ma | PINK VULP SUPREMACY",
       "port": 1213,
       "status_file": null,
       "info_file": null
     },
     {
       "id": "server_3",
-      "name": "https://discord.gg/HSC6Frb6ma | SAY MEWO IN OUR DISCORD PWWEASE~~",
+      "name": "discord.gg/HSC6Frb6ma | SAY MEWO IN OUR DISCORD PWWEASE~~",
       "port": 1214,
       "status_file": null,
       "info_file": null
