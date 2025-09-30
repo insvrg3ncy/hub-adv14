@@ -343,17 +343,20 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
         """Возвращает статус сервера в зависимости от порта"""
         # Список названий серверов
         server_names = [
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
-            "dsc.gg/nwTYTsqh | хаб будет плакать", 
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
-            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon", 
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
         ]
         
         # Список карт
@@ -405,11 +408,19 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
                 "manifest_download_url": "https://cdn.station14.ru/fork/syndicate-public/version/e301f52e655c57d6df4a0475e75eb4b24f64e0e4/download",
                 "manifest_hash": "9AF4E8A392C87A4BDB60CDA83A59AFCE4DEF439FF44E6094DF077295A6964C7E"
             },
-            "desc": f"discord.gg/HSC6Frb6ma | Server {port-1211} | SS14 Multi-Server",
+            "desc": f"""https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14   
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14""",
             "links": [
                 {
-                    "name": "Discord",
-                    "url": "https://discord.gg/HSC6Frb6ma"
+                    "name": "Telegram",
+                    "url": "https://t.me/VT_SS14"
                 }
             ]
         }
@@ -448,11 +459,19 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
                 "manifest_url": "https://cdn.station14.ru/fork/syndicate-public/version/e301f52e655c57d6df4a0475e75eb4b24f64e0e4/manifest",
                 "manifest_hash": "9AF4E8A392C87A4BDB60CDA83A59AFCE4DEF439FF44E6094DF077295A6964C7E"
             },
-            "desc": "Гойда!",
+            "desc": f"""https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14   
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14
+                    https://t.me/VT_SS14""",
             "links": [
                 {
-                    "name": "Discord",
-                    "url": "https://discord.gg/HSC6Frb6ma"
+                    "name": "Telegram",
+                    "url": "https://t.me/VT_SS14"
                 }
             ]
         }
