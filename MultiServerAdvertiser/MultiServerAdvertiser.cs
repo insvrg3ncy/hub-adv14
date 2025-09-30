@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Text;
 using System.Linq;
+using SocksSharp;
+using SocksSharp.Proxy;
 
 namespace SS14ServerAdvertiser
 {
@@ -35,34 +37,43 @@ namespace SS14ServerAdvertiser
 
         private HttpClient CreateHttpClient(string proxyUrl = null)
         {
-            var handler = new HttpClientHandler();
-            
-            // Игнорируем SSL ошибки для работы с проблемными прокси
-            handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-            
-            // Настройка SOCKS5 прокси
             if (!string.IsNullOrEmpty(proxyUrl))
             {
                 try
                 {
-                    var proxy = new WebProxy(proxyUrl);
-                    if (!string.IsNullOrEmpty(_config.ProxyUsername))
+                    // Парсим адрес прокси
+                    var parts = proxyUrl.Split(':');
+                    if (parts.Length != 2)
                     {
-                        proxy.Credentials = new NetworkCredential(_config.ProxyUsername, _config.ProxyPassword);
-                        _logger.LogInfo($"Используется SOCKS5 прокси: {proxyUrl} (с аутентификацией)");
+                        throw new ArgumentException($"Неверный формат прокси: {proxyUrl}");
                     }
-                    else
+
+                    var proxyHost = parts[0];
+                    var proxyPort = int.Parse(parts[1]);
+
+                    // Создаем настройки SOCKS5 прокси
+                    var settings = new ProxySettings
                     {
-                        _logger.LogInfo($"Используется SOCKS5 прокси: {proxyUrl} (без аутентификации)");
-                    }
-                    handler.Proxy = proxy;
-                    handler.UseProxy = true;
+                        Host = proxyHost,
+                        Port = proxyPort
+                    };
+
+                    _logger.LogInfo($"Используется SOCKS5 прокси: {proxyUrl}");
+
+                    // Создаем HttpClient с SOCKS5 прокси
+                    var proxyHandler = new ProxyClientHandler<Socks5>(settings);
+                    var client = new HttpClient(proxyHandler);
+                    client.Timeout = TimeSpan.FromSeconds(_config.RequestTimeoutSeconds);
+                    client.DefaultRequestHeaders.Add("User-Agent", "SS14MultiServerAdvertiser/1.0");
+                    
+                    _logger.LogInfo($"HttpClient timeout установлен: {_config.RequestTimeoutSeconds} секунд");
+                    return client;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Ошибка настройки прокси {proxyUrl}: {ex.Message}");
+                    _logger.LogError($"Ошибка настройки SOCKS5 прокси {proxyUrl}: {ex.Message}");
                     _logger.LogError("✗ НЕ ПЕРЕКЛЮЧАЕМСЯ НА ПРЯМОЕ ПОДКЛЮЧЕНИЕ - ТОЛЬКО ПРОКСИ!");
-                    throw new InvalidOperationException($"Прокси {proxyUrl} не работает: {ex.Message}");
+                    throw new InvalidOperationException($"SOCKS5 прокси {proxyUrl} не работает: {ex.Message}");
                 }
             }
             else
@@ -70,17 +81,6 @@ namespace SS14ServerAdvertiser
                 _logger.LogError("✗ ПРОКСИ НЕ НАСТРОЕН - ПРОГРАММА НЕ РАБОТАЕТ БЕЗ ПРОКСИ!");
                 throw new InvalidOperationException("Прокси не настроен - программа работает только через прокси!");
             }
-
-            var client = new HttpClient(handler);
-            client.Timeout = TimeSpan.FromSeconds(_config.RequestTimeoutSeconds);
-            
-            // Логируем установленный таймаут для отладки
-            _logger.LogInfo($"HttpClient timeout установлен: {_config.RequestTimeoutSeconds} секунд");
-            
-            // User-Agent для идентификации
-            client.DefaultRequestHeaders.Add("User-Agent", "SS14MultiServerAdvertiser/1.0");
-            
-            return client;
         }
 
         /// <summary>
@@ -299,21 +299,28 @@ namespace SS14ServerAdvertiser
         /// </summary>
         private HttpClient CreateTestHttpClient(string proxyUrl)
         {
-            var handler = new HttpClientHandler();
-            
-            // Игнорируем SSL ошибки
-            handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-            
-            // Настраиваем SOCKS5 прокси
-            var proxy = new WebProxy(proxyUrl);
-            if (!string.IsNullOrEmpty(_config.ProxyUsername))
+            // Парсим адрес прокси
+            var parts = proxyUrl.Split(':');
+            if (parts.Length != 2)
             {
-                proxy.Credentials = new NetworkCredential(_config.ProxyUsername, _config.ProxyPassword);
+                throw new ArgumentException($"Неверный формат прокси: {proxyUrl}");
             }
-            handler.Proxy = proxy;
-            handler.UseProxy = true;
-            
-            var client = new HttpClient(handler);
+
+            var proxyHost = parts[0];
+            var proxyPort = int.Parse(parts[1]);
+
+            // Создаем настройки SOCKS5 прокси
+            var settings = new ProxySettings
+            {
+                Host = proxyHost,
+                Port = proxyPort
+            };
+
+            // Аутентификация пока не поддерживается в этой версии
+
+            // Создаем HttpClient с SOCKS5 прокси
+            var proxyHandler = new ProxyClientHandler<Socks5>(settings);
+            var client = new HttpClient(proxyHandler);
             client.Timeout = TimeSpan.FromSeconds(_config.ProxyTestTimeoutSeconds);
             client.DefaultRequestHeaders.Add("User-Agent", "SS14MultiServerAdvertiser/1.0");
             
