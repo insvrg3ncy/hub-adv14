@@ -489,22 +489,92 @@ def load_config(config_file: str = 'multiservers.json') -> dict:
         "servers": [
             {
                 "id": "server_1",
-                "name": "dsc.gg/nwTYTsqh | хаб будет плакать",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
                 "port": 1212,
                 "status_file": "status.json",
                 "info_file": "info.json"
             },
             {
                 "id": "server_2", 
-                "name": "dsc.gg/nwTYTsqh | хаб будет плакать",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
                 "port": 1213,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_3",
-                "name": "dsc.gg/nwTYTsqh | хаб будет плакать", 
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon", 
                 "port": 1214,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_4",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1215,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_5",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1216,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_6",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1217,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_7",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1218,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_8",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1219,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_9",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1220,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_10",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1221,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_11",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1222,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_12",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1223,
+                "status_file": None,
+                "info_file": None
+            },
+            {
+                "id": "server_13",
+                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "port": 1224,
                 "status_file": None,
                 "info_file": None
             }
@@ -556,7 +626,7 @@ if __name__ == "__main__":
         current_server = next(iter(servers.keys())) if servers else None
     
     # Порты для каждого сервера
-    server_ports = list(range(1212, 1227))  # 1212-1225 (13 портов)
+    server_ports = list(range(1212, 1225))  # 1212-1224 (13 портов)
     
     print("=" * 70)
     print("🎮 МУЛЬТИСЕРВЕРНЫЙ ФЕЙКОВЫЙ SS14 СЕРВЕР")
