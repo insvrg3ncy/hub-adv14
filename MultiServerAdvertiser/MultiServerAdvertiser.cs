@@ -72,7 +72,29 @@ namespace SS14ServerAdvertiser
 
                     var client = new HttpClient(handler);
                     client.Timeout = TimeSpan.FromSeconds(_config.RequestTimeoutSeconds);
-                    client.DefaultRequestHeaders.Add("User-Agent", "SS14MultiServerAdvertiser/1.0");
+                    
+                    // Случайный User-Agent для обхода блокировки
+                    var userAgents = new[]
+                    {
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/121.0"
+                    };
+                    var random = new Random();
+                    var randomUserAgent = userAgents[random.Next(userAgents.Length)];
+                    client.DefaultRequestHeaders.Add("User-Agent", randomUserAgent);
+                    
+                    // Дополнительные заголовки для обхода блокировки
+                    client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
+                    client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9,ru;q=0.8");
+                    client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+                    client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+                    client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
+                    client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
+                    client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "cross-site");
                     
                     _logger.LogInfo($"HttpClient timeout установлен: {_config.RequestTimeoutSeconds} секунд");
                     return client;
@@ -765,6 +787,11 @@ namespace SS14ServerAdvertiser
 
         private async Task AdvertiseServerAsync(ServerInstance server)
         {
+            // Случайная задержка для обхода блокировки (1-5 секунд)
+            var random = new Random();
+            var delay = random.Next(1000, 5000);
+            await Task.Delay(delay);
+            
             using (var httpClient = GetHttpClientForServer(server.Address))
             {
                 var maxRetries = _config.MaxRetries;
