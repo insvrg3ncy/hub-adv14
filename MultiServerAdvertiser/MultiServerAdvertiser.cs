@@ -21,6 +21,7 @@ namespace SS14ServerAdvertiser
         private readonly ILogger _logger;
         private readonly List<ServerInstance> _servers;
         private int _currentProxyIndex = 0;
+        private readonly Dictionary<string, int> _proxyErrorCount = new Dictionary<string, int>();
 
         public MultiServerAdvertiser(MultiServerConfig config, ILogger logger = null)
         {
@@ -484,34 +485,66 @@ namespace SS14ServerAdvertiser
         }
 
         /// <summary>
-        /// Удаляет нерабочий прокси из списка
+        /// Получает текущий активный прокси
+        /// </summary>
+        public string GetCurrentProxy()
+        {
+            if (_workingProxies.Count > 0)
+            {
+                return _workingProxies[_currentProxyIndex % _workingProxies.Count];
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Удаляет нерабочий прокси из списка (только после нескольких ошибок)
         /// </summary>
         public async void RemoveFailedProxy(string proxyUrl)
         {
-            bool removedFromWorking = _workingProxies.Remove(proxyUrl);
-            bool removedFromMain = _config.Socks5ProxyList.Remove(proxyUrl);
-            
-            if (removedFromWorking || removedFromMain)
+            // Увеличиваем счетчик ошибок для прокси
+            if (!_proxyErrorCount.ContainsKey(proxyUrl))
             {
-                _logger.LogWarning($"✗ Удаляем нерабочий прокси: {proxyUrl}");
-                _logger.LogInfo($"Осталось рабочих прокси: {_workingProxies.Count}");
-                _logger.LogInfo($"Осталось прокси в списке: {_config.Socks5ProxyList.Count}");
+                _proxyErrorCount[proxyUrl] = 0;
+            }
+            _proxyErrorCount[proxyUrl]++;
+            
+            _logger.LogWarning($"✗ Ошибка прокси {proxyUrl} (ошибка #{_proxyErrorCount[proxyUrl]})");
+            
+            // Удаляем прокси только после 3 ошибок
+            if (_proxyErrorCount[proxyUrl] >= 3)
+            {
+                bool removedFromWorking = _workingProxies.Remove(proxyUrl);
+                bool removedFromMain = _config.Socks5ProxyList.Remove(proxyUrl);
                 
-                // Сохраняем обновленный список прокси в файл
-                await SaveProxiesToFileAsync();
-                
-                // Сбрасываем индекс если он выходит за границы
-                if (_currentProxyIndex >= _workingProxies.Count)
+                if (removedFromWorking || removedFromMain)
                 {
-                    _currentProxyIndex = 0;
+                    _logger.LogWarning($"✗ Удаляем прокси после {_proxyErrorCount[proxyUrl]} ошибок: {proxyUrl}");
+                    _logger.LogInfo($"Осталось рабочих прокси: {_workingProxies.Count}");
+                    _logger.LogInfo($"Осталось прокси в списке: {_config.Socks5ProxyList.Count}");
+                    
+                    // Удаляем из счетчика ошибок
+                    _proxyErrorCount.Remove(proxyUrl);
+                    
+                    // Сохраняем обновленный список прокси в файл
+                    await SaveProxiesToFileAsync();
+                    
+                    // Сбрасываем индекс если он выходит за границы
+                    if (_currentProxyIndex >= _workingProxies.Count)
+                    {
+                        _currentProxyIndex = 0;
+                    }
+                    
+                    // Если прокси закончились, останавливаем программу
+                    if (_workingProxies.Count == 0)
+                    {
+                        _logger.LogError("✗ ВСЕ ПРОКСИ НЕРАБОЧИЕ - ПРОГРАММА ОСТАНАВЛИВАЕТСЯ!");
+                        Environment.Exit(1);
+                    }
                 }
-                
-                // Если прокси закончились, останавливаем программу
-                if (_workingProxies.Count == 0)
-                {
-                    _logger.LogError("✗ ВСЕ ПРОКСИ НЕРАБОЧИЕ - ПРОГРАММА ОСТАНАВЛИВАЕТСЯ!");
-                    Environment.Exit(1);
-                }
+            }
+            else
+            {
+                _logger.LogInfo($"Прокси {proxyUrl} остается в списке (ошибок: {_proxyErrorCount[proxyUrl]}/3)");
             }
         }
 
@@ -760,6 +793,15 @@ namespace SS14ServerAdvertiser
                         {
                             server.LastAdvertised = DateTime.UtcNow;
                             server.SuccessCount++;
+                            
+                            // Сбрасываем счетчик ошибок для текущего прокси при успехе
+                            var currentProxy = GetCurrentProxy();
+                            if (!string.IsNullOrEmpty(currentProxy) && _proxyErrorCount.ContainsKey(currentProxy))
+                            {
+                                _proxyErrorCount.Remove(currentProxy);
+                                _logger.LogInfo($"✓ Сброшен счетчик ошибок для прокси: {currentProxy}");
+                            }
+                            
                             _logger.LogInfo($"✓ Сервер зарегистрирован: {server.DisplayName}");
                             return; // Успех, выходим из цикла
                         }
