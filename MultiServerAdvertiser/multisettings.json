@@ -40,55 +40,55 @@
     "ProxyTestTimeoutSeconds": 10,
     "Servers": [
       {
-        "Address": "ss14://45.77.123.45:1212",
+        "Address": "ss14://10.94.64.172:1212",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1213", 
+        "Address": "ss14://10.94.64.172:1213", 
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1214", 
+        "Address": "ss14://10.94.64.172:1214", 
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },  
       {
-        "Address": "ss14://45.77.123.45:1215",
+        "Address": "ss14://10.94.64.172:1215",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1216",
+        "Address": "ss14://10.94.64.172:1216",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1217",
+        "Address": "ss14://10.94.64.172:1217",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1218",
+        "Address": "ss14://10.94.64.172:1218",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1219",
+        "Address": "ss14://10.94.64.172:1219",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1220",
+        "Address": "ss14://10.94.64.172:1220",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1221",
+        "Address": "ss14://10.94.64.172:1221",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1222",
+        "Address": "ss14://10.94.64.172:1222",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1223",
+        "Address": "ss14://10.94.64.172:1223",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       },
       {
-        "Address": "ss14://45.77.123.45:1224",
+        "Address": "ss14://10.94.64.172:1224",
         "DisplayName": "t.me/VT_SS14 | PJB go smd, hub will cry soon"
       }
     ]
