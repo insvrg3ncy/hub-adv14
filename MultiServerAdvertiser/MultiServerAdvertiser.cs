@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Text;
 using System.Linq;
-using SocksSharp;
-using SocksSharp.Proxy;
 
 namespace SS14ServerAdvertiser
 {
@@ -51,18 +49,28 @@ namespace SS14ServerAdvertiser
                     var proxyHost = parts[0];
                     var proxyPort = int.Parse(parts[1]);
 
-                    // Создаем настройки SOCKS5 прокси
-                    var settings = new ProxySettings
+                    // Создаем WebProxy для SOCKS5
+                    var proxy = new WebProxy($"socks5://{proxyHost}:{proxyPort}");
+                    
+                    // Настройка аутентификации если есть
+                    if (!string.IsNullOrEmpty(_config.ProxyUsername))
                     {
-                        Host = proxyHost,
-                        Port = proxyPort
+                        proxy.Credentials = new NetworkCredential(_config.ProxyUsername, _config.ProxyPassword);
+                        _logger.LogInfo($"Используется SOCKS5 прокси: {proxyUrl} (с аутентификацией)");
+                    }
+                    else
+                    {
+                        _logger.LogInfo($"Используется SOCKS5 прокси: {proxyUrl} (без аутентификации)");
+                    }
+
+                    // Создаем HttpClientHandler с прокси
+                    var handler = new HttpClientHandler()
+                    {
+                        Proxy = proxy,
+                        UseProxy = true
                     };
 
-                    _logger.LogInfo($"Используется SOCKS5 прокси: {proxyUrl}");
-
-                    // Создаем HttpClient с SOCKS5 прокси
-                    var proxyHandler = new ProxyClientHandler<Socks5>(settings);
-                    var client = new HttpClient(proxyHandler);
+                    var client = new HttpClient(handler);
                     client.Timeout = TimeSpan.FromSeconds(_config.RequestTimeoutSeconds);
                     client.DefaultRequestHeaders.Add("User-Agent", "SS14MultiServerAdvertiser/1.0");
                     
@@ -181,7 +189,7 @@ namespace SS14ServerAdvertiser
                 return null;
             }
 
-            _logger.LogInfo($"Тестируем {_config.Socks5ProxyList.Count} SOCKS5 прокси на доступность и возможность рекламы...");
+            _logger.LogInfo($"Тестируем {_config.Socks5ProxyList.Count} SOCKS5 прокси на доступность и подключение к API...");
 
             var tasks = _config.Socks5ProxyList.Select(async proxyUrl =>
             {
@@ -254,42 +262,30 @@ namespace SS14ServerAdvertiser
         }
 
         /// <summary>
-        /// Тестирует возможность рекламы через прокси
+        /// Тестирует подключение к API через прокси
         /// </summary>
         private async Task<bool> TestProxyAdvertisementAsync(HttpClient testClient, string proxyUrl)
         {
             try
             {
-                // Используем тестовый адрес для проверки рекламы
-                var testAddress = "ss14://test.example.com:1212";
-                var advertiseRequest = new { Address = testAddress };
-                var json = JsonSerializer.Serialize(advertiseRequest);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await testClient.PostAsync($"{_hubUrl}/api/servers/advertise", content);
+                // Просто проверяем подключение к API серверов
+                var response = await testClient.GetAsync($"{_hubUrl}/api/servers/");
                 
                 if (response.IsSuccessStatusCode)
                 {
+                    _logger.LogInfo($"  └─ ✓ Прокси работает: {proxyUrl}");
                     return true;
                 }
                 else
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    if (responseContent.Contains("blocked") || responseContent.Contains("заблокирован"))
-                    {
-                        _logger.LogWarning($"  └─ Прокси заблокирован для рекламы: {responseContent}");
-                        return false;
-                    }
-                    else
-                    {
-                        _logger.LogWarning($"  └─ Ошибка рекламы через прокси: {response.StatusCode} - {responseContent}");
-                        return false;
-                    }
+                    _logger.LogWarning($"  └─ ✗ Прокси не работает: {proxyUrl} - {response.StatusCode} - {responseContent}");
+                    return false;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning($"  └─ Ошибка тестирования рекламы: {ex.Message}");
+                _logger.LogWarning($"  └─ ✗ Ошибка подключения через прокси: {proxyUrl} - {ex.Message}");
                 return false;
             }
         }
@@ -309,18 +305,23 @@ namespace SS14ServerAdvertiser
             var proxyHost = parts[0];
             var proxyPort = int.Parse(parts[1]);
 
-            // Создаем настройки SOCKS5 прокси
-            var settings = new ProxySettings
+            // Создаем WebProxy для SOCKS5
+            var proxy = new WebProxy($"socks5://{proxyHost}:{proxyPort}");
+            
+            // Настройка аутентификации если есть
+            if (!string.IsNullOrEmpty(_config.ProxyUsername))
             {
-                Host = proxyHost,
-                Port = proxyPort
+                proxy.Credentials = new NetworkCredential(_config.ProxyUsername, _config.ProxyPassword);
+            }
+
+            // Создаем HttpClientHandler с прокси
+            var handler = new HttpClientHandler()
+            {
+                Proxy = proxy,
+                UseProxy = true
             };
 
-            // Аутентификация пока не поддерживается в этой версии
-
-            // Создаем HttpClient с SOCKS5 прокси
-            var proxyHandler = new ProxyClientHandler<Socks5>(settings);
-            var client = new HttpClient(proxyHandler);
+            var client = new HttpClient(handler);
             client.Timeout = TimeSpan.FromSeconds(_config.ProxyTestTimeoutSeconds);
             client.DefaultRequestHeaders.Add("User-Agent", "SS14MultiServerAdvertiser/1.0");
             
@@ -373,7 +374,7 @@ namespace SS14ServerAdvertiser
                 return new List<string>();
             }
 
-            _logger.LogInfo($"Тестируем {_config.Socks5ProxyList.Count} SOCKS5 прокси на доступность и возможность рекламы...");
+            _logger.LogInfo($"Тестируем {_config.Socks5ProxyList.Count} SOCKS5 прокси на доступность и подключение к API...");
 
             var tasks = _config.Socks5ProxyList.Select(async proxyUrl =>
             {
