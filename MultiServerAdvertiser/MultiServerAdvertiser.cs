@@ -16,7 +16,7 @@ namespace SS14ServerAdvertiser
     public class MultiServerAdvertiser : IDisposable
     {
         private readonly string _hubUrl;
-        private readonly Timer _advertisementTimer;
+        private Timer _advertisementTimer;
         private readonly MultiServerConfig _config;
         private readonly ILogger _logger;
         private readonly List<ServerInstance> _servers;
@@ -29,7 +29,7 @@ namespace SS14ServerAdvertiser
             _hubUrl = config.HubUrl.TrimEnd('/');
             _servers = new List<ServerInstance>();
             
-            _advertisementTimer = new Timer(AdvertiseAllServers, null, TimeSpan.Zero, TimeSpan.FromMinutes(config.AdvertisementIntervalMinutes));
+            // Таймер не запускается сразу - будет запущен после тестирования прокси
         }
 
         private HttpClient CreateHttpClient(string proxyUrl = null)
@@ -915,9 +915,22 @@ namespace SS14ServerAdvertiser
             _logger.LogInfo($"Последняя реклама: {stats.LastAdvertised:HH:mm:ss}");
         }
 
+        /// <summary>
+        /// Запускает таймер рекламы
+        /// </summary>
+        public void Start()
+        {
+            if (_advertisementTimer == null)
+            {
+                _advertisementTimer = new Timer(AdvertiseAllServers, null, TimeSpan.Zero, TimeSpan.FromMinutes(_config.AdvertisementIntervalMinutes));
+                _logger.LogInfo($"✓ Таймер рекламы запущен (интервал: {_config.AdvertisementIntervalMinutes} мин)");
+            }
+        }
+
         public void Stop()
         {
             _advertisementTimer?.Dispose();
+            _advertisementTimer = null;
         }
 
         public void Dispose()

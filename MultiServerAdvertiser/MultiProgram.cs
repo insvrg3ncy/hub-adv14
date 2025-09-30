@@ -70,6 +70,9 @@ namespace SS14ServerAdvertiser
                         logger.LogInfo($"✓ Найдено {workingProxies.Count} рабочих прокси, используем все по очереди");
                         advertiser.SetWorkingProxies(workingProxies);
                         advertiser.SwitchToNextProxy();
+                        
+                        // Запускаем таймер рекламы только после успешного тестирования прокси
+                        advertiser.Start();
                     }
                     else
                     {
@@ -78,7 +81,16 @@ namespace SS14ServerAdvertiser
                         return;
                     }
                 }
+                else
+                {
+                    // Если автоматическое тестирование отключено, запускаем таймер сразу
+                    logger.LogInfo("Автоматическое тестирование прокси отключено, запускаем рекламу...");
+                    advertiser.Start();
+                }
 
+                // Небольшая задержка перед первым тестом подключения
+                await Task.Delay(2000);
+                
                 // Тестируем подключение с первым прокси
                 var connectionOk = await advertiser.TestConnectionAsync();
                 if (!connectionOk)
