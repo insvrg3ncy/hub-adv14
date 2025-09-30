@@ -343,19 +343,17 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
         """Возвращает статус сервера в зависимости от порта"""
         # Список названий серверов
         server_names = [
-            "discord.gg/HSC6Frb6ma | MakeSS14GreatAgain88 | Це пранк друзья",
-            "discord.gg/HSC6Frb6ma | PINK VULP SUPREMACY", 
-            "discord.gg/HSC6Frb6ma | SAY MEWO IN OUR DISCORD PWWEASE~~",
-            "discord.gg/HSC6Frb6ma | бля какая же ыы14 хуета",
-            "discord.gg/HSC6Frb6ma | алё алё пиздены приём",
-            "discord.gg/HSC6Frb6ma | слава вульпам",
-            "discord.gg/HSC6Frb6ma | боже храни вульп",
-            "discord.gg/HSC6Frb6ma | дворфы худшая раса, сосите",
-            "discord.gg/HSC6Frb6ma | дехабните пж",
-            "discord.gg/HSC6Frb6ma | мяумяу",
-            "discord.gg/HSC6Frb6ma | мурмур",
-            "discord.gg/HSC6Frb6ma | что ещё написать",
-            "discord.gg/HSC6Frb6ma | я хз"
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "dsc.gg/nwTYTsqh | хаб будет плакать", 
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
+            "dsc.gg/nwTYTsqh | хаб будет плакать",
         ]
         
         # Список карт
@@ -411,7 +409,7 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
             "links": [
                 {
                     "name": "Discord",
-                    "url": "discord.gg/HSC6Frb6ma"
+                    "url": "https://discord.gg/HSC6Frb6ma"
                 }
             ]
         }
@@ -454,7 +452,7 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
             "links": [
                 {
                     "name": "Discord",
-                    "url": "discord.gg/HSC6Frb6ma"
+                    "url": "https://discord.gg/HSC6Frb6ma"
                 }
             ]
         }
@@ -472,21 +470,21 @@ def load_config(config_file: str = 'multiservers.json') -> dict:
         "servers": [
             {
                 "id": "server_1",
-                "name": "TeZt ZerVer #1",
+                "name": "dsc.gg/nwTYTsqh | хаб будет плакать",
                 "port": 1212,
                 "status_file": "status.json",
                 "info_file": "info.json"
             },
             {
                 "id": "server_2", 
-                "name": "TeZt ZerVer #2",
+                "name": "dsc.gg/nwTYTsqh | хаб будет плакать",
                 "port": 1213,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_3",
-                "name": "TeZt ZerVer #3", 
+                "name": "dsc.gg/nwTYTsqh | хаб будет плакать", 
                 "port": 1214,
                 "status_file": None,
                 "info_file": None

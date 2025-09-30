@@ -60,7 +60,7 @@ namespace SS14ServerAdvertiser
                 advertiser.LoadProxiesFromFile();
                 
                 // Тестируем прокси если включено автоматическое тестирование
-                if (multiConfig.AutoTestProxies && multiConfig.ProxyList != null && multiConfig.ProxyList.Any())
+                if (multiConfig.AutoTestProxies && multiConfig.Socks5ProxyList != null && multiConfig.Socks5ProxyList.Any())
                 {
                     logger.LogInfo("Автоматически тестируем прокси...");
                     var workingProxies = await advertiser.FindAllWorkingProxiesAsync();

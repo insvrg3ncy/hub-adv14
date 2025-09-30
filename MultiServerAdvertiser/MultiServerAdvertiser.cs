@@ -39,7 +39,7 @@ namespace SS14ServerAdvertiser
             // Игнорируем SSL ошибки для работы с проблемными прокси
             handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
             
-            // Настройка прокси если указан
+            // Настройка SOCKS5 прокси
             if (!string.IsNullOrEmpty(proxyUrl))
             {
                 try
@@ -48,11 +48,11 @@ namespace SS14ServerAdvertiser
                     if (!string.IsNullOrEmpty(_config.ProxyUsername))
                     {
                         proxy.Credentials = new NetworkCredential(_config.ProxyUsername, _config.ProxyPassword);
-                        _logger.LogInfo($"Используется прокси: {proxyUrl} (с аутентификацией)");
+                        _logger.LogInfo($"Используется SOCKS5 прокси: {proxyUrl} (с аутентификацией)");
                     }
                     else
                     {
-                        _logger.LogInfo($"Используется прокси: {proxyUrl} (без аутентификации)");
+                        _logger.LogInfo($"Используется SOCKS5 прокси: {proxyUrl} (без аутентификации)");
                     }
                     handler.Proxy = proxy;
                     handler.UseProxy = true;
@@ -103,11 +103,11 @@ namespace SS14ServerAdvertiser
                 _currentProxyIndex++;
                 _logger.LogInfo($"Сервер {serverAddress} использует рабочий прокси: {proxyUrl}");
             }
-            else if (_config.ProxyList != null && _config.ProxyList.Count > 0)
+            else if (_config.Socks5ProxyList != null && _config.Socks5ProxyList.Count > 0)
             {
-                proxyUrl = _config.ProxyList[_currentProxyIndex % _config.ProxyList.Count];
+                proxyUrl = _config.Socks5ProxyList[_currentProxyIndex % _config.Socks5ProxyList.Count];
                 _currentProxyIndex++;
-                _logger.LogInfo($"Сервер {serverAddress} использует прокси: {proxyUrl}");
+                _logger.LogInfo($"Сервер {serverAddress} использует SOCKS5 прокси: {proxyUrl}");
             }
 
             return CreateHttpClient(proxyUrl);
@@ -164,7 +164,7 @@ namespace SS14ServerAdvertiser
             _logger.LogWarning("Отключаем прокси...");
             
             _config.ProxyUrl = null;
-            _config.ProxyList = null;
+            // Удаляем старые прокси
             
             _logger.LogInfo("✓ Прокси отключен");
         }
@@ -174,15 +174,15 @@ namespace SS14ServerAdvertiser
         /// </summary>
         public async Task<string> FindWorkingProxyAsync()
         {
-            if (_config.ProxyList == null || !_config.ProxyList.Any())
+            if (_config.Socks5ProxyList == null || !_config.Socks5ProxyList.Any())
             {
-                _logger.LogWarning("Список прокси пуст");
+                _logger.LogWarning("Список SOCKS5 прокси пуст, нечего тестировать");
                 return null;
             }
 
-            _logger.LogInfo($"Тестируем {_config.ProxyList.Count} прокси на доступность и возможность рекламы...");
+            _logger.LogInfo($"Тестируем {_config.Socks5ProxyList.Count} SOCKS5 прокси на доступность и возможность рекламы...");
 
-            var tasks = _config.ProxyList.Select(async proxyUrl =>
+            var tasks = _config.Socks5ProxyList.Select(async proxyUrl =>
             {
                 try
                 {
@@ -220,6 +220,21 @@ namespace SS14ServerAdvertiser
 
             var results = await Task.WhenAll(tasks);
             _workingProxies = results.Where(r => r != null).ToList();
+
+            // Удаляем нерабочие прокси из основного списка
+            var workingProxySet = new HashSet<string>(_workingProxies);
+            var originalCount = _config.Socks5ProxyList.Count;
+            _config.Socks5ProxyList = _config.Socks5ProxyList.Where(p => workingProxySet.Contains(p)).ToList();
+            var removedCount = originalCount - _config.Socks5ProxyList.Count;
+
+            if (removedCount > 0)
+            {
+                _logger.LogInfo($"✓ Удалено {removedCount} нерабочих прокси из списка");
+                _logger.LogInfo($"✓ Осталось {_config.Socks5ProxyList.Count} рабочих прокси в списке");
+                
+                // Сохраняем обновленный список прокси в файл
+                await SaveProxiesToFileAsync();
+            }
 
             if (_workingProxies.Count > 0)
             {
@@ -288,8 +303,12 @@ namespace SS14ServerAdvertiser
             // Игнорируем SSL ошибки
             handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
             
-            // Настраиваем прокси
+            // Настраиваем SOCKS5 прокси
             var proxy = new WebProxy(proxyUrl);
+            if (!string.IsNullOrEmpty(_config.ProxyUsername))
+            {
+                proxy.Credentials = new NetworkCredential(_config.ProxyUsername, _config.ProxyPassword);
+            }
             handler.Proxy = proxy;
             handler.UseProxy = true;
             
@@ -317,9 +336,9 @@ namespace SS14ServerAdvertiser
         /// </summary>
         public async Task RefreshWorkingProxiesAsync()
         {
-            if (_config.ProxyList == null || !_config.ProxyList.Any())
+            if (_config.Socks5ProxyList == null || !_config.Socks5ProxyList.Any())
             {
-                _logger.LogWarning("Список прокси пуст, нечего обновлять");
+                _logger.LogWarning("Список SOCKS5 прокси пуст, нечего обновлять");
                 return;
             }
 
@@ -340,15 +359,15 @@ namespace SS14ServerAdvertiser
         /// </summary>
         public async Task<List<string>> FindAllWorkingProxiesAsync()
         {
-            if (_config.ProxyList == null || !_config.ProxyList.Any())
+            if (_config.Socks5ProxyList == null || !_config.Socks5ProxyList.Any())
             {
-                _logger.LogWarning("Список прокси пуст");
+                _logger.LogWarning("Список SOCKS5 прокси пуст, нечего тестировать");
                 return new List<string>();
             }
 
-            _logger.LogInfo($"Тестируем {_config.ProxyList.Count} прокси на доступность и возможность рекламы...");
+            _logger.LogInfo($"Тестируем {_config.Socks5ProxyList.Count} SOCKS5 прокси на доступность и возможность рекламы...");
 
-            var tasks = _config.ProxyList.Select(async proxyUrl =>
+            var tasks = _config.Socks5ProxyList.Select(async proxyUrl =>
             {
                 try
                 {
@@ -387,6 +406,18 @@ namespace SS14ServerAdvertiser
             var results = await Task.WhenAll(tasks);
             var workingProxies = results.Where(r => r != null).ToList();
 
+            // Удаляем нерабочие прокси из основного списка
+            var workingProxySet = new HashSet<string>(workingProxies);
+            var originalCount = _config.Socks5ProxyList.Count;
+            _config.Socks5ProxyList = _config.Socks5ProxyList.Where(p => workingProxySet.Contains(p)).ToList();
+            var removedCount = originalCount - _config.Socks5ProxyList.Count;
+
+            if (removedCount > 0)
+            {
+                _logger.LogInfo($"✓ Удалено {removedCount} нерабочих прокси из списка");
+                _logger.LogInfo($"✓ Осталось {_config.Socks5ProxyList.Count} рабочих прокси в списке");
+            }
+
             if (workingProxies.Count > 0)
             {
                 _logger.LogInfo($"✓ Найдено {workingProxies.Count} рабочих прокси для рекламы:");
@@ -400,7 +431,29 @@ namespace SS14ServerAdvertiser
                 _logger.LogWarning("✗ Рабочие прокси не найдены");
             }
 
+            // Сохраняем обновленный список прокси в файл
+            await SaveProxiesToFileAsync();
+
             return workingProxies;
+        }
+
+        /// <summary>
+        /// Сохраняет текущий список прокси в файл
+        /// </summary>
+        public async Task SaveProxiesToFileAsync()
+        {
+            try
+            {
+                if (_config.Socks5ProxyList != null && _config.Socks5ProxyList.Any())
+                {
+                    await File.WriteAllLinesAsync("socks5_proxy_list.txt", _config.Socks5ProxyList);
+                    _logger.LogInfo($"✓ Сохранено {_config.Socks5ProxyList.Count} рабочих прокси в файл socks5_proxy_list.txt");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ошибка сохранения прокси в файл: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -433,12 +486,19 @@ namespace SS14ServerAdvertiser
         /// <summary>
         /// Удаляет нерабочий прокси из списка
         /// </summary>
-        public void RemoveFailedProxy(string proxyUrl)
+        public async void RemoveFailedProxy(string proxyUrl)
         {
-            if (_workingProxies.Remove(proxyUrl))
+            bool removedFromWorking = _workingProxies.Remove(proxyUrl);
+            bool removedFromMain = _config.Socks5ProxyList.Remove(proxyUrl);
+            
+            if (removedFromWorking || removedFromMain)
             {
                 _logger.LogWarning($"✗ Удаляем нерабочий прокси: {proxyUrl}");
                 _logger.LogInfo($"Осталось рабочих прокси: {_workingProxies.Count}");
+                _logger.LogInfo($"Осталось прокси в списке: {_config.Socks5ProxyList.Count}");
+                
+                // Сохраняем обновленный список прокси в файл
+                await SaveProxiesToFileAsync();
                 
                 // Сбрасываем индекс если он выходит за границы
                 if (_currentProxyIndex >= _workingProxies.Count)
@@ -460,12 +520,12 @@ namespace SS14ServerAdvertiser
         /// </summary>
         public async Task CleanupFailedProxiesAsync()
         {
-            if (_config.ProxyList == null || !_config.ProxyList.Any())
+            if (_config.Socks5ProxyList == null || !_config.Socks5ProxyList.Any())
                 return;
 
             _logger.LogInfo("Проверяем и удаляем нерабочие прокси из основного списка...");
             
-            var tasks = _config.ProxyList.Select(async proxyUrl =>
+            var tasks = _config.Socks5ProxyList.Select(async proxyUrl =>
             {
                 try
                 {
@@ -482,11 +542,14 @@ namespace SS14ServerAdvertiser
             var results = await Task.WhenAll(tasks);
             var workingProxies = results.Where(r => r != null).ToList();
             
-            if (workingProxies.Count != _config.ProxyList.Count)
+            if (workingProxies.Count != _config.Socks5ProxyList.Count)
             {
-                var removedCount = _config.ProxyList.Count - workingProxies.Count;
+                var removedCount = _config.Socks5ProxyList.Count - workingProxies.Count;
                 _logger.LogInfo($"✓ Удалено {removedCount} нерабочих прокси из основного списка");
-                _config.ProxyList = workingProxies;
+                _config.Socks5ProxyList = workingProxies;
+                
+                // Сохраняем обновленный список прокси в файл
+                await SaveProxiesToFileAsync();
             }
         }
 
@@ -497,19 +560,19 @@ namespace SS14ServerAdvertiser
         {
             try
             {
-                if (File.Exists(_config.ProxyListFile))
+                if (File.Exists("socks5_proxy_list.txt"))
                 {
-                    var proxyLines = File.ReadAllLines(_config.ProxyListFile)
+                    var proxyLines = File.ReadAllLines("socks5_proxy_list.txt")
                         .Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith("#"))
                         .Select(line => line.Trim())
                         .ToList();
 
-                    _config.ProxyList = proxyLines;
-                    _logger.LogInfo($"Загружено {proxyLines.Count} прокси из файла {_config.ProxyListFile}");
+                    _config.Socks5ProxyList = proxyLines;
+                    _logger.LogInfo($"Загружено {proxyLines.Count} SOCKS5 прокси из файла socks5_proxy_list.txt");
                 }
                 else
                 {
-                    _logger.LogWarning($"Файл прокси {_config.ProxyListFile} не найден");
+                    _logger.LogWarning($"Файл SOCKS5 прокси socks5_proxy_list.txt не найден");
                 }
             }
             catch (Exception ex)
@@ -736,7 +799,7 @@ namespace SS14ServerAdvertiser
                         // Если это последняя попытка, удаляем прокси с таймаутом
                         if (attempt == maxRetries)
                         {
-                            RemoveFailedProxy(_config.ProxyUrl);
+                            await Task.Run(() => RemoveFailedProxy(_config.ProxyUrl));
                         }
                     }
                     catch (HttpRequestException ex)
@@ -754,14 +817,14 @@ namespace SS14ServerAdvertiser
                                 _logger.LogWarning($"  └─ Прокси возвращает ошибку {ex.InnerException.Message.Split(' ').FirstOrDefault(s => s.Contains("502") || s.Contains("503") || s.Contains("404"))}");
                                 
                                 // Удаляем нерабочий прокси
-                                RemoveFailedProxy(_config.ProxyUrl);
+                                await Task.Run(() => RemoveFailedProxy(_config.ProxyUrl));
                             }
                         }
                         
                         // Если это последняя попытка и ошибка связана с прокси, удаляем его
                         if (attempt == maxRetries)
                         {
-                            RemoveFailedProxy(_config.ProxyUrl);
+                            await Task.Run(() => RemoveFailedProxy(_config.ProxyUrl));
                         }
                     }
                     catch (Exception ex)
@@ -909,11 +972,6 @@ namespace SS14ServerAdvertiser
         public string ProxyUrl { get; set; }
 
         /// <summary>
-        /// Список резервных прокси
-        /// </summary>
-        public List<string> BackupProxies { get; set; } = new List<string>();
-
-        /// <summary>
         /// Имя пользователя для прокси
         /// </summary>
         public string ProxyUsername { get; set; }
@@ -939,9 +997,9 @@ namespace SS14ServerAdvertiser
         public bool AutoDisableProxyOnError { get; set; } = true;
 
         /// <summary>
-        /// Список прокси для автоматического тестирования
+        /// Список SOCKS5 прокси для автоматического тестирования
         /// </summary>
-        public List<string> ProxyList { get; set; } = new List<string>();
+        public List<string> Socks5ProxyList { get; set; } = new List<string>();
 
         /// <summary>
         /// Автоматически тестировать прокси при запуске
@@ -953,10 +1011,6 @@ namespace SS14ServerAdvertiser
         /// </summary>
         public int ProxyTestTimeoutSeconds { get; set; } = 10;
 
-        /// <summary>
-        /// Путь к файлу со списком прокси
-        /// </summary>
-        public string ProxyListFile { get; set; } = "proxy_list.txt";
     }
 
     /// <summary>

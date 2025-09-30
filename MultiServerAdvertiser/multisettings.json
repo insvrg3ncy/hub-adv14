@@ -6,7 +6,7 @@
     "AdvertisementIntervalMinutes": 2,
     "RequestTimeoutSeconds": 30,
     "CheckServerAvailability": false,
-    "ProxyUrl": "128.199.202.122:8080",
+    "ProxyUrl": "112.91.141.18:9001",
     "ProxyUsername": "",
     "ProxyPassword": "",
     "MaxRetries": 3,
@@ -14,68 +14,82 @@
     "AutoDisableProxyOnError": false,
     "ForceProxyOnly": true,
     "SkipDirectConnection": true,
-    "ProxyList": [
-      "128.199.202.122:8080",
-      "52.193.148.177:3128",
-      "103.152.112.162:80",
-      "45.77.56.113:3128",
-      "138.68.60.8:8080"
+    "Socks5ProxyList": [
+      "112.91.141.18:9001",
+      "64.227.124.137:24551",
+      "58.219.244.104:8989",
+      "83.147.253.215:33712",
+      "39.107.227.3:1024",
+      "154.64.240.34:6688",
+      "47.251.110.26:1025",
+      "156.244.46.233:1122",
+      "156.244.15.252:1024",
+      "39.107.227.3:1111",
+      "156.244.15.252:1122",
+      "47.251.110.26:1011",
+      "40.76.13.119:51080",
+      "121.237.181.137:8888",
+      "47.251.110.26:1024",
+      "46.19.68.45:2333",
+      "156.244.15.252:1111",
+      "114.96.79.134:8888",
+      "84.22.150.109:40776",
+      "40.76.13.119:9443"
     ],
     "AutoTestProxies": true,
     "ProxyTestTimeoutSeconds": 10,
-    "ProxyListFile": "proxy_list.txt",
     "Servers": [
       {
         "Address": "ss14://194.102.104.184:1212",
-        "DisplayName": "discord.gg/HSC6Frb6ma | MakeSS14GreatAgain88"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1213", 
-        "DisplayName": "discord.gg/HSC6Frb6ma | PINK VULP SUPREMACY"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1214", 
-        "DisplayName": "discord.gg/HSC6Frb6ma | SAY MEWO IN OUR DISCORD PWWEASE~~"
-      },
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
+      },  
       {
         "Address": "ss14://194.102.104.184:1215",
-        "DisplayName": "discord.gg/HSC6Frb6ma | бля какая же ыы14 хуета"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1216",
-        "DisplayName": "discord.gg/HSC6Frb6ma | алё алё пиздены приём"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1217",
-        "DisplayName": "discord.gg/HSC6Frb6ma | слава вульпам"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1218",
-        "DisplayName": "discord.gg/HSC6Frb6ma | боже храни вульп"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1219",
-        "DisplayName": "discord.gg/HSC6Frb6ma | дворфы худшая раса, сосите"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1220",
-        "DisplayName": "discord.gg/HSC6Frb6ma | дехабните пж"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1221",
-        "DisplayName": "discord.gg/HSC6Frb6ma | ПАСТА НА ШВЕДА::: ФИО: Дворников Виктор Максимович День рождения: 14.05.2006(на момент создания ласта ему было 16-17 лет) ТЕЛЕФОН: 79773131678 ПОЧТА:hokagetopchik@gmail.com ПАСПОРТ:4620966812 / 9668124620 СНИЛС: 19072141858 ИНН: 7017422617700 Место жительства(90%, ведь Швед скорее всего живет с родителями): 143969 Победы д. 2 корп. 1 кв. 59(2024),  Московская обл, г Балашиха, мкр Кучино, ул Речная,5,52(2023),  РОССИЯ, ТОМСКАЯ ОБЛАСТЬ, Г.ТОМСК, УЛ.СИБИРСКАЯ, Д.104, КВ.401(2022) Соц-сети: Telegram: @victorshved / 1575642768 VK: https://vk.com/id621898427 / https://vk.com/id515672232 VK группы:  https://vk.com/assasins2024 / https://vk.com/mc_homie / https://vk.com/brawlmemsik Spotify: https://open.spotify.com/user/31ebd7lghryabvqqfdvl24jqppja Twich: https://www.twitch.tv/sshvedik Google карты и его отзыв, наверное его школа: https://www.google.com/maps/contrib/108185975076167896887/photos/@55.7480551,37.9668901,514m/data=!3m1!1e3!4m3!8m2!3m1!1e1?entry=ttu&g_ep=EgoyMDI1MDUwNy4wIKXMDSoASAFQAw%3D%3D GitHub: https://github.com/sshved1k / https://github.com/VictorSShved Его коммиты на старом гите : https://github.com/search?q=committer-email%3Ahokagetopchik%40gmail.com+author-email%3Ahokagetopchik%40gmail.com&type=commits&p=1 Yappy: https://yappy.media/n/arkasha.dota Одноклассники: https://ok.ru/profile/581077621410"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1222",
-        "DisplayName": "discord.gg/HSC6Frb6ma | Avee с Imperial Space долбаеб, там нету никаких вирусов"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1223",
-        "DisplayName": "discord.gg/HSC6Frb6ma | и да, зайти ты не сможешь, Avee"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       },
       {
         "Address": "ss14://194.102.104.184:1224",
-        "DisplayName": "discord.gg/HSC6Frb6ma | ХАКiРИ"
+        "DisplayName": "dsc.gg/nwTYTsqh | PJB go smd, hub soon will cry"
       }
     ]
   },
