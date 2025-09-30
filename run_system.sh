@@ -42,17 +42,9 @@ done
 echo "⏳ Ждем запуска туннелей..."
 sleep 10
 
-# Запускаем advertiser
-echo "📢 Запускаем advertiser..."
-cd MultiServerAdvertiser
-dotnet run &
-ADVERTISER_PID=$!
-cd ..
-
 echo "✅ Система запущена!"
 echo "📊 PID процессов:"
 echo "   - VULPS: $VULPS_PID"
-echo "   - Advertiser: $ADVERTISER_PID"
 echo ""
 echo "🔗 Туннели доступны по адресам:"
 for port in {1212..1224}; do
