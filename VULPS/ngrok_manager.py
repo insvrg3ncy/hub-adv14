@@ -46,17 +46,17 @@ class NgrokManager:
                 del os.environ['HTTPS_PROXY']
             
             try:
-                # Запускаем ngrok БЕЗ прокси
+                # Запускаем ngrok БЕЗ прокси в фоне
                 cmd = ['ngrok', 'tcp', str(port), '--log=stdout']
                 self.ngrok_process = subprocess.Popen(
                     cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
                     text=True
                 )
                 
                 # Ждем запуска
-                time.sleep(5)
+                time.sleep(8)
                 
                 # Получаем URL туннеля
                 tunnel_url = self.get_tunnel_url(port)
@@ -173,12 +173,15 @@ class NgrokManager:
         """Создает туннели для списка портов"""
         success_count = 0
         
-        for port in ports:
-            if self.start_ngrok(port):
-                success_count += 1
-                time.sleep(3)  # Задержка между туннелями
-            else:
-                print(f"⚠️ Пропускаем порт {port}")
+        # Создаем только один туннель для основного порта
+        main_port = ports[0] if ports else 1212
+        print(f"🔧 Создаем основной туннель для порта {main_port}...")
+        
+        if self.start_ngrok(main_port):
+            success_count += 1
+            print(f"✅ Основной туннель создан для порта {main_port}")
+        else:
+            print(f"❌ Не удалось создать туннель для порта {main_port}")
         
         print(f"📊 Создано {success_count}/{len(ports)} туннелей")
         return success_count > 0
