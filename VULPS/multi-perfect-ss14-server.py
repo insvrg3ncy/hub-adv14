@@ -13,7 +13,11 @@ import time
 import urllib.parse
 import threading
 import random
+import signal
+import sys
 from typing import Dict, List, Optional
+from socks5_advertiser import Socks5Advertiser
+from proxy_manager import init_proxy_manager, get_proxy_manager
 
 class ServerInstance:
     """Информация о сервере"""
@@ -30,6 +34,55 @@ class ServerInstance:
 servers = {}
 current_server = None
 server_lock = threading.Lock()
+
+# Глобальная переменная для рекламы
+advertiser = None
+
+def signal_handler(signum, frame):
+    """Обработчик сигналов для корректного завершения"""
+    print("\n🛑 Получен сигнал завершения...")
+    
+    # Останавливаем рекламу
+    global advertiser
+    if advertiser:
+        advertiser.stop()
+    
+    # Отключаем прокси
+    proxy_manager = get_proxy_manager()
+    if proxy_manager:
+        proxy_manager.disable_global_proxy()
+    
+    print("✅ Корректное завершение выполнено")
+    sys.exit(0)
+
+def init_proxy_from_config():
+    """Инициализирует прокси из конфигурации"""
+    try:
+        with open('advertiser_config.json', 'r', encoding='utf-8') as f:
+            config = json.load(f)
+        
+        proxy_list = config.get('socks5_proxy_list', [])
+        proxy_file = config.get('socks5_proxy_list_file')
+        username = config.get('proxy_username', '')
+        password = config.get('proxy_password', '')
+        
+        if proxy_list or proxy_file:
+            print(f"🌐 Инициализируем прокси...")
+            proxy_manager = init_proxy_manager(proxy_list, proxy_file, username, password)
+            
+            if proxy_manager.start_with_proxy():
+                print("✅ Глобальный прокси успешно настроен")
+                return True
+            else:
+                print("❌ Не удалось настроить прокси")
+                return False
+        else:
+            print("⚠️ Список прокси пуст в конфигурации")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Ошибка инициализации прокси: {e}")
+        return False
 
 class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -74,6 +127,16 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
             self.handle_status()
         elif path == '/info':
             self.handle_info()
+        elif path == '/advertiser/start':
+            self.handle_advertiser_start()
+        elif path == '/advertiser/stop':
+            self.handle_advertiser_stop()
+        elif path == '/advertiser/status':
+            self.handle_advertiser_status()
+        elif path == '/proxy/status':
+            self.handle_proxy_status()
+        elif path == '/proxy/switch':
+            self.handle_proxy_switch()
         else:
             self.send_response(404)
             self.send_header('Content-Type', 'text/plain')
@@ -225,6 +288,104 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
         self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
+
+    def handle_advertiser_start(self):
+        """Запустить рекламу"""
+        global advertiser
+        
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        
+        try:
+            if advertiser is None:
+                advertiser = Socks5Advertiser()
+            
+            if not advertiser.is_running:
+                advertiser.start()
+                response = {'success': True, 'message': 'Реклама запущена'}
+            else:
+                response = {'success': False, 'message': 'Реклама уже запущена'}
+        except Exception as e:
+            response = {'success': False, 'message': f'Ошибка запуска рекламы: {e}'}
+        
+        self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
+
+    def handle_advertiser_stop(self):
+        """Остановить рекламу"""
+        global advertiser
+        
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        
+        try:
+            if advertiser and advertiser.is_running:
+                advertiser.stop()
+                response = {'success': True, 'message': 'Реклама остановлена'}
+            else:
+                response = {'success': False, 'message': 'Реклама не запущена'}
+        except Exception as e:
+            response = {'success': False, 'message': f'Ошибка остановки рекламы: {e}'}
+        
+        self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
+
+    def handle_advertiser_status(self):
+        """Получить статус рекламы"""
+        global advertiser
+        
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        
+        try:
+            if advertiser:
+                status = advertiser.get_status()
+                response = {'success': True, 'status': status}
+            else:
+                response = {'success': True, 'status': {'is_running': False, 'message': 'Реклама не инициализирована'}}
+        except Exception as e:
+            response = {'success': False, 'message': f'Ошибка получения статуса: {e}'}
+        
+        self.wfile.write(json.dumps(response, ensure_ascii=False, indent=2).encode('utf-8'))
+
+    def handle_proxy_status(self):
+        """Получить статус прокси"""
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        
+        try:
+            proxy_manager = get_proxy_manager()
+            if proxy_manager:
+                status = proxy_manager.get_status()
+                response = {'success': True, 'status': status}
+            else:
+                response = {'success': True, 'status': {'is_enabled': False, 'message': 'Прокси не инициализирован'}}
+        except Exception as e:
+            response = {'success': False, 'message': f'Ошибка получения статуса прокси: {e}'}
+        
+        self.wfile.write(json.dumps(response, ensure_ascii=False, indent=2).encode('utf-8'))
+
+    def handle_proxy_switch(self):
+        """Переключиться на другой прокси"""
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        
+        try:
+            proxy_manager = get_proxy_manager()
+            if proxy_manager:
+                if proxy_manager.switch_proxy():
+                    response = {'success': True, 'message': 'Прокси переключен', 'current_proxy': proxy_manager.current_proxy}
+                else:
+                    response = {'success': False, 'message': 'Не удалось переключить прокси'}
+            else:
+                response = {'success': False, 'message': 'Прокси не инициализирован'}
+        except Exception as e:
+            response = {'success': False, 'message': f'Ошибка переключения прокси: {e}'}
+        
+        self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
 
     def handle_status(self):
         """Обработка запроса статуса"""
@@ -607,6 +768,17 @@ def create_handler_class():
     return MultiSS14Handler
 
 if __name__ == "__main__":
+    # Настраиваем обработчики сигналов
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    # Инициализируем прокси
+    print("🚀 Запускаем VULPS с поддержкой прокси...")
+    proxy_initialized = init_proxy_from_config()
+    
+    if not proxy_initialized:
+        print("⚠️ Прокси не настроен, работаем без прокси")
+    
     # Загружаем конфигурацию
     config = load_config()
     
@@ -639,6 +811,11 @@ if __name__ == "__main__":
     print("   • /switch?id=server_id - переключиться на сервер")
     print("   • /add?name=Name&port=1234 - добавить сервер")
     print("   • /remove?id=server_id - удалить сервер")
+    print("   • /advertiser/start - запустить рекламу в хабе")
+    print("   • /advertiser/stop - остановить рекламу")
+    print("   • /advertiser/status - статус рекламы")
+    print("   • /proxy/status - статус прокси")
+    print("   • /proxy/switch - переключить прокси")
     print(f"🔄 Текущий сервер: {current_server}")
     print(f"📊 Всего серверов: {len(servers)}")
     print("⏹️  Нажмите Ctrl+C для остановки")
