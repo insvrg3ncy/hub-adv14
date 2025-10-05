@@ -39,7 +39,7 @@ fi
 
 # Устанавливаем зависимости Python
 print_info "Устанавливаем зависимости Python..."
-pip3 install -r requirements.txt
+pip3 install -r requirements.txt --upgrade
 
 # Проверяем файлы
 if [ ! -f "socks5_proxy_list.txt" ]; then

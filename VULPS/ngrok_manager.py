@@ -11,6 +11,8 @@ import threading
 import os
 import signal
 import sys
+import socks
+import socket
 from typing import List, Dict, Optional
 
 class NgrokManager:
@@ -65,8 +67,12 @@ class NgrokManager:
             # Ждем немного для стабилизации
             time.sleep(2)
             
+            # Создаем сессию без прокси для локальных запросов
+            session = requests.Session()
+            session.proxies = {}  # Отключаем прокси для localhost
+            
             # Запрашиваем информацию о туннелях
-            response = requests.get('http://localhost:4040/api/tunnels', timeout=10)
+            response = session.get('http://localhost:4040/api/tunnels', timeout=10)
             if response.status_code == 200:
                 data = response.json()
                 for tunnel in data.get('tunnels', []):
