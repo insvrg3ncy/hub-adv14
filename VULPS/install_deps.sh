@@ -17,7 +17,7 @@ print_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
 print_info "Устанавливаем Python зависимости..."
 
 # Устанавливаем зависимости
-pip3 install -r requirements.txt --upgrade
+pip3 install -r requirements.txt --upgrade --break-system-packages
 
 if [ $? -eq 0 ]; then
     print_status "Зависимости установлены успешно"
