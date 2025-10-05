@@ -142,23 +142,19 @@ class NgrokManager:
             
             print(f"🔧 Обновляем конфигурацию с {len(self.tunnels)} туннелями...")
             
-            # Получаем основной туннель (для порта 1212)
-            main_tunnel = None
-            if 1212 in self.tunnels:
-                main_tunnel = self.tunnels[1212]
-                # Убираем tcp:// если есть
-                if main_tunnel.startswith('tcp://'):
-                    main_tunnel = main_tunnel[6:]
-            
             # Обновляем адреса серверов
             for i, server in enumerate(config.get('servers', [])):
-                if main_tunnel:
-                    # Все серверы используют один ngrok туннель
-                    server['address'] = f"ss14://{main_tunnel}"
+                port = 1212 + i
+                if port in self.tunnels:
+                    tunnel_url = self.tunnels[port]
+                    # Убираем tcp:// если есть
+                    if tunnel_url.startswith('tcp://'):
+                        tunnel_url = tunnel_url[6:]
+                    
+                    server['address'] = f"ss14://{tunnel_url}"
                     print(f"✅ Обновлен сервер {i+1}: {server['address']}")
                 else:
                     # Если туннель не создан, используем localhost
-                    port = 1212 + i
                     server['address'] = f"ss14://localhost:{port}"
                     print(f"⚠️ Сервер {i+1} остался localhost:{port} (туннель не создан)")
             
@@ -174,21 +170,98 @@ class NgrokManager:
             return False
     
     def create_tunnels_for_ports(self, ports: List[int]) -> bool:
-        """Создает туннели для списка портов"""
+        """Создает туннели для списка портов через ngrok API"""
         success_count = 0
         
-        # Создаем туннели для всех портов
+        # Сначала запускаем ngrok daemon
+        print("🚀 Запускаем ngrok daemon...")
+        if not self._start_ngrok_daemon():
+            print("❌ Не удалось запустить ngrok daemon")
+            return False
+        
+        # Ждем запуска daemon
+        time.sleep(5)
+        
+        # Создаем туннели для всех портов через API
         for port in ports:
             print(f"🔧 Создаем туннель для порта {port}...")
-            if self.start_ngrok(port):
+            if self._create_tunnel_via_api(port):
                 success_count += 1
                 print(f"✅ Туннель создан для порта {port}")
-                time.sleep(2)  # Задержка между туннелями
+                time.sleep(1)  # Небольшая задержка между туннелями
             else:
                 print(f"❌ Не удалось создать туннель для порта {port}")
         
         print(f"📊 Создано {success_count}/{len(ports)} туннелей")
         return success_count > 0
+    
+    def _start_ngrok_daemon(self) -> bool:
+        """Запускает ngrok daemon"""
+        try:
+            # Временно убираем прокси для ngrok
+            old_http_proxy = os.environ.pop('HTTP_PROXY', None)
+            old_https_proxy = os.environ.pop('HTTPS_PROXY', None)
+            
+            try:
+                # Запускаем ngrok daemon
+                cmd = ['ngrok', 'start', '--none', '--log=stdout']
+                self.ngrok_process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    text=True
+                )
+                print("🚀 ngrok daemon запущен")
+                return True
+                
+            finally:
+                # Восстанавливаем переменные окружения
+                if old_http_proxy:
+                    os.environ['HTTP_PROXY'] = old_http_proxy
+                if old_https_proxy:
+                    os.environ['HTTPS_PROXY'] = old_https_proxy
+                    
+        except Exception as e:
+            print(f"❌ Ошибка запуска ngrok daemon: {e}")
+            return False
+    
+    def _create_tunnel_via_api(self, port: int) -> bool:
+        """Создает туннель через ngrok API"""
+        try:
+            import requests
+            
+            # Создаем сессию без прокси для localhost
+            session = requests.Session()
+            
+            # Данные для создания туннеля
+            tunnel_data = {
+                "name": f"tcp-{port}",
+                "proto": "tcp",
+                "addr": str(port)
+            }
+            
+            # Создаем туннель
+            response = session.post(
+                "http://localhost:4040/api/tunnels",
+                json=tunnel_data,
+                timeout=10
+            )
+            
+            if response.status_code == 201:
+                tunnel_info = response.json()
+                public_url = tunnel_info.get('public_url', '')
+                if public_url:
+                    # Убираем tcp:// префикс
+                    if public_url.startswith('tcp://'):
+                        public_url = public_url[6:]
+                    self.tunnels[port] = public_url
+                    return True
+            
+            return False
+            
+        except Exception as e:
+            print(f"❌ Ошибка создания туннеля через API: {e}")
+            return False
 
 def load_proxy_from_file(proxy_file: str = 'socks5_proxy_list.txt') -> Optional[tuple]:
     """Загружает первый прокси из файла"""
@@ -234,8 +307,8 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
     
     try:
-        # Создаем только один туннель для основного порта
-        ports = [1212]  # Только основной порт
+        # Создаем туннели для всех портов
+        ports = [1212, 1213, 1214, 1215, 1216, 1217, 1218, 1219, 1220, 1221, 1222, 1223, 1224]
         if ngrok_manager.create_tunnels_for_ports(ports):
             # Обновляем конфигурацию
             ngrok_manager.update_config()
