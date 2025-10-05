@@ -230,34 +230,57 @@ class NgrokManager:
         try:
             import requests
             
-            # Создаем сессию без прокси для localhost
-            session = requests.Session()
+            # Временно отключаем глобальный прокси для localhost
+            old_http_proxy = os.environ.get('HTTP_PROXY')
+            old_https_proxy = os.environ.get('HTTPS_PROXY')
+            old_all_proxy = os.environ.get('ALL_PROXY')
             
-            # Данные для создания туннеля
-            tunnel_data = {
-                "name": f"tcp-{port}",
-                "proto": "tcp",
-                "addr": str(port)
-            }
+            # Очищаем переменные окружения для localhost
+            if 'HTTP_PROXY' in os.environ:
+                del os.environ['HTTP_PROXY']
+            if 'HTTPS_PROXY' in os.environ:
+                del os.environ['HTTPS_PROXY']
+            if 'ALL_PROXY' in os.environ:
+                del os.environ['ALL_PROXY']
             
-            # Создаем туннель
-            response = session.post(
-                "http://localhost:4040/api/tunnels",
-                json=tunnel_data,
-                timeout=10
-            )
-            
-            if response.status_code == 201:
-                tunnel_info = response.json()
-                public_url = tunnel_info.get('public_url', '')
-                if public_url:
-                    # Убираем tcp:// префикс
-                    if public_url.startswith('tcp://'):
-                        public_url = public_url[6:]
-                    self.tunnels[port] = public_url
-                    return True
-            
-            return False
+            try:
+                # Создаем сессию без прокси для localhost
+                session = requests.Session()
+                
+                # Данные для создания туннеля
+                tunnel_data = {
+                    "name": f"tcp-{port}",
+                    "proto": "tcp",
+                    "addr": str(port)
+                }
+                
+                # Создаем туннель
+                response = session.post(
+                    "http://localhost:4040/api/tunnels",
+                    json=tunnel_data,
+                    timeout=10
+                )
+                
+                if response.status_code == 201:
+                    tunnel_info = response.json()
+                    public_url = tunnel_info.get('public_url', '')
+                    if public_url:
+                        # Убираем tcp:// префикс
+                        if public_url.startswith('tcp://'):
+                            public_url = public_url[6:]
+                        self.tunnels[port] = public_url
+                        return True
+                
+                return False
+                
+            finally:
+                # Восстанавливаем переменные окружения
+                if old_http_proxy:
+                    os.environ['HTTP_PROXY'] = old_http_proxy
+                if old_https_proxy:
+                    os.environ['HTTPS_PROXY'] = old_https_proxy
+                if old_all_proxy:
+                    os.environ['ALL_PROXY'] = old_all_proxy
             
         except Exception as e:
             print(f"❌ Ошибка создания туннеля через API: {e}")
