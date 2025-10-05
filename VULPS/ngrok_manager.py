@@ -142,19 +142,23 @@ class NgrokManager:
             
             print(f"🔧 Обновляем конфигурацию с {len(self.tunnels)} туннелями...")
             
+            # Получаем основной туннель (для порта 1212)
+            main_tunnel = None
+            if 1212 in self.tunnels:
+                main_tunnel = self.tunnels[1212]
+                # Убираем tcp:// если есть
+                if main_tunnel.startswith('tcp://'):
+                    main_tunnel = main_tunnel[6:]
+            
             # Обновляем адреса серверов
             for i, server in enumerate(config.get('servers', [])):
-                port = 1212 + i
-                if port in self.tunnels:
-                    tunnel_url = self.tunnels[port]
-                    # Убираем tcp:// если есть
-                    if tunnel_url.startswith('tcp://'):
-                        tunnel_url = tunnel_url[6:]
-                    
-                    server['address'] = f"ss14://{tunnel_url}"
+                if main_tunnel:
+                    # Все серверы используют один ngrok туннель
+                    server['address'] = f"ss14://{main_tunnel}"
                     print(f"✅ Обновлен сервер {i+1}: {server['address']}")
                 else:
                     # Если туннель не создан, используем localhost
+                    port = 1212 + i
                     server['address'] = f"ss14://localhost:{port}"
                     print(f"⚠️ Сервер {i+1} остался localhost:{port} (туннель не создан)")
             
@@ -230,8 +234,8 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
     
     try:
-        # Создаем туннели для основных портов (ограничиваем до 5 для стабильности)
-        ports = [1212, 1213, 1214, 1215, 1216]  # Первые 5 портов
+        # Создаем только один туннель для основного порта
+        ports = [1212]  # Только основной порт
         if ngrok_manager.create_tunnels_for_ports(ports):
             # Обновляем конфигурацию
             ngrok_manager.update_config()
