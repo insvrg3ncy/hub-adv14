@@ -64,12 +64,9 @@ PROXY_PORT=$(echo $PROXY | cut -d: -f2)
 
 print_info "Используем прокси: $PROXY_HOST:$PROXY_PORT"
 
-# Настраиваем переменные окружения для прокси
-# НЕ устанавливаем ALL_PROXY, чтобы localhost не шел через прокси
-export HTTP_PROXY="socks5://$PROXY_HOST:$PROXY_PORT"
-export HTTPS_PROXY="socks5://$PROXY_HOST:$PROXY_PORT"
-
-print_status "Переменные окружения настроены"
+# НЕ настраиваем переменные окружения для прокси здесь
+# Они будут настроены в Python коде для конкретных запросов
+print_status "Прокси будет настроен в Python коде"
 
 # Функция очистки
 cleanup() {

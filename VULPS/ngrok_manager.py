@@ -35,27 +35,45 @@ class NgrokManager:
     def start_ngrok(self, port: int) -> bool:
         """Запускает ngrok туннель для указанного порта"""
         try:
-            # Запускаем ngrok
-            cmd = ['ngrok', 'tcp', str(port), '--log=stdout']
-            self.ngrok_process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
+            # Временно отключаем прокси для запуска ngrok
+            old_http_proxy = os.environ.get('HTTP_PROXY')
+            old_https_proxy = os.environ.get('HTTPS_PROXY')
             
-            # Ждем запуска
-            time.sleep(5)
+            # Очищаем переменные окружения для ngrok
+            if 'HTTP_PROXY' in os.environ:
+                del os.environ['HTTP_PROXY']
+            if 'HTTPS_PROXY' in os.environ:
+                del os.environ['HTTPS_PROXY']
             
-            # Получаем URL туннеля
-            tunnel_url = self.get_tunnel_url(port)
-            if tunnel_url:
-                self.tunnels[port] = tunnel_url
-                print(f"✅ Туннель создан для порта {port}: {tunnel_url}")
-                return True
-            else:
-                print(f"❌ Не удалось создать туннель для порта {port}")
-                return False
+            try:
+                # Запускаем ngrok БЕЗ прокси
+                cmd = ['ngrok', 'tcp', str(port), '--log=stdout']
+                self.ngrok_process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                
+                # Ждем запуска
+                time.sleep(5)
+                
+                # Получаем URL туннеля
+                tunnel_url = self.get_tunnel_url(port)
+                if tunnel_url:
+                    self.tunnels[port] = tunnel_url
+                    print(f"✅ Туннель создан для порта {port}: {tunnel_url}")
+                    return True
+                else:
+                    print(f"❌ Не удалось создать туннель для порта {port}")
+                    return False
+                    
+            finally:
+                # Восстанавливаем переменные окружения
+                if old_http_proxy:
+                    os.environ['HTTP_PROXY'] = old_http_proxy
+                if old_https_proxy:
+                    os.environ['HTTPS_PROXY'] = old_https_proxy
                 
         except Exception as e:
             print(f"❌ Ошибка запуска ngrok: {e}")
