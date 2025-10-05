@@ -67,23 +67,42 @@ class NgrokManager:
             # Ждем немного для стабилизации
             time.sleep(2)
             
-            # Создаем сессию без прокси для локальных запросов
-            session = requests.Session()
-            session.proxies = {}  # Отключаем прокси для localhost
+            # Временно отключаем глобальный прокси для localhost
+            old_http_proxy = os.environ.get('HTTP_PROXY')
+            old_https_proxy = os.environ.get('HTTPS_PROXY')
+            old_all_proxy = os.environ.get('ALL_PROXY')
             
-            # Запрашиваем информацию о туннелях
-            response = session.get('http://localhost:4040/api/tunnels', timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                for tunnel in data.get('tunnels', []):
-                    if tunnel.get('config', {}).get('addr') == f'localhost:{port}':
-                        public_url = tunnel.get('public_url', '')
-                        if public_url:
-                            # Убираем tcp:// префикс
-                            if public_url.startswith('tcp://'):
-                                public_url = public_url[6:]
-                            return public_url
-            return None
+            # Очищаем переменные окружения для localhost
+            if 'HTTP_PROXY' in os.environ:
+                del os.environ['HTTP_PROXY']
+            if 'HTTPS_PROXY' in os.environ:
+                del os.environ['HTTPS_PROXY']
+            if 'ALL_PROXY' in os.environ:
+                del os.environ['ALL_PROXY']
+            
+            try:
+                # Запрашиваем информацию о туннелях
+                response = requests.get('http://localhost:4040/api/tunnels', timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    for tunnel in data.get('tunnels', []):
+                        if tunnel.get('config', {}).get('addr') == f'localhost:{port}':
+                            public_url = tunnel.get('public_url', '')
+                            if public_url:
+                                # Убираем tcp:// префикс
+                                if public_url.startswith('tcp://'):
+                                    public_url = public_url[6:]
+                                return public_url
+                return None
+            finally:
+                # Восстанавливаем переменные окружения
+                if old_http_proxy:
+                    os.environ['HTTP_PROXY'] = old_http_proxy
+                if old_https_proxy:
+                    os.environ['HTTPS_PROXY'] = old_https_proxy
+                if old_all_proxy:
+                    os.environ['ALL_PROXY'] = old_all_proxy
+                    
         except Exception as e:
             print(f"❌ Ошибка получения URL туннеля для порта {port}: {e}")
             return None

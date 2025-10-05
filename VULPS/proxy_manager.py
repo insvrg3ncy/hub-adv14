@@ -122,6 +122,7 @@ class ProxyManager:
             socket.socket = socks.socksocket
             
             # Настраиваем переменные окружения для requests
+            # НЕ устанавливаем ALL_PROXY, чтобы localhost не шел через прокси
             os.environ['HTTP_PROXY'] = f'socks5://{proxy_host}:{proxy_port}'
             os.environ['HTTPS_PROXY'] = f'socks5://{proxy_host}:{proxy_port}'
             
