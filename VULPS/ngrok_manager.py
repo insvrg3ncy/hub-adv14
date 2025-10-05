@@ -62,16 +62,24 @@ class NgrokManager:
     def get_tunnel_url(self, port: int) -> Optional[str]:
         """Получает URL туннеля для указанного порта"""
         try:
+            # Ждем немного для стабилизации
+            time.sleep(2)
+            
             # Запрашиваем информацию о туннелях
             response = requests.get('http://localhost:4040/api/tunnels', timeout=10)
             if response.status_code == 200:
                 data = response.json()
                 for tunnel in data.get('tunnels', []):
                     if tunnel.get('config', {}).get('addr') == f'localhost:{port}':
-                        return tunnel.get('public_url', '').replace('tcp://', '')
+                        public_url = tunnel.get('public_url', '')
+                        if public_url:
+                            # Убираем tcp:// префикс
+                            if public_url.startswith('tcp://'):
+                                public_url = public_url[6:]
+                            return public_url
             return None
         except Exception as e:
-            print(f"❌ Ошибка получения URL туннеля: {e}")
+            print(f"❌ Ошибка получения URL туннеля для порта {port}: {e}")
             return None
     
     def stop_ngrok(self):
@@ -89,22 +97,29 @@ class NgrokManager:
             with open(config_file, 'r', encoding='utf-8') as f:
                 config = json.load(f)
             
+            print(f"🔧 Обновляем конфигурацию с {len(self.tunnels)} туннелями...")
+            
             # Обновляем адреса серверов
             for i, server in enumerate(config.get('servers', [])):
                 port = 1212 + i
                 if port in self.tunnels:
-                    host, tunnel_port = self.tunnels[port].split(':')
-                    server['address'] = f"ss14://{host}:{tunnel_port}"
+                    tunnel_url = self.tunnels[port]
+                    # Убираем tcp:// если есть
+                    if tunnel_url.startswith('tcp://'):
+                        tunnel_url = tunnel_url[6:]
+                    
+                    server['address'] = f"ss14://{tunnel_url}"
                     print(f"✅ Обновлен сервер {i+1}: {server['address']}")
                 else:
-                    # Оставляем localhost для неактивных туннелей
+                    # Если туннель не создан, используем localhost
                     server['address'] = f"ss14://localhost:{port}"
+                    print(f"⚠️ Сервер {i+1} остался localhost:{port} (туннель не создан)")
             
             # Сохраняем конфиг
             with open(config_file, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=2, ensure_ascii=False)
             
-            print("✅ Конфигурация обновлена")
+            print("✅ Конфигурация обновлена и сохранена")
             return True
             
         except Exception as e:
