@@ -466,6 +466,28 @@ namespace SS14ServerAdvertiser
         }
 
         /// <summary>
+        /// Сохраняет конфигурацию с обновленным IP в файл
+        /// </summary>
+        public async Task SaveConfigWithIpAsync()
+        {
+            try
+            {
+                var configJson = JsonSerializer.Serialize(new { MultiServerConfig = _config }, new JsonSerializerOptions 
+                { 
+                    WriteIndented = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                });
+                
+                await File.WriteAllTextAsync("multisettings.json", configJson);
+                _logger.LogInfo($"✓ Конфигурация с IP {_config.CurrentExternalIp} сохранена в multisettings.json");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ошибка сохранения конфигурации: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Устанавливает список рабочих прокси
         /// </summary>
         public void SetWorkingProxies(List<string> proxies)
@@ -702,24 +724,27 @@ namespace SS14ServerAdvertiser
                 _logger.LogInfo($"Внешний IP: {externalIp}");
                 _logger.LogInfo($"Генерируем {_config.ServerCount} серверов...");
 
-                var random = new Random();
+                // Сохраняем IP в конфигурации
+                _config.CurrentExternalIp = externalIp;
+
+                // Используем последовательные порты начиная с 1212
+                var startPort = 1212;
                 var usedPorts = new HashSet<int>();
 
                 for (int i = 0; i < _config.ServerCount; i++)
                 {
-                    int port;
-                    do
-                    {
-                        port = random.Next(1024, 65535);
-                    } while (usedPorts.Contains(port));
-                    
+                    int port = startPort + i;
                     usedPorts.Add(port);
                     
-                    var serverAddress = $"ss14://{externalIp}:{port}/";
-                    var displayName = $"Auto Server {i + 1}";
+                    var serverAddress = $"ss14://{externalIp}:{port}";
+                    var displayName = $"t.me/VT_SS14 | PJB, suck my dick";
                     
                     AddServer(serverAddress, displayName);
+                    _logger.LogInfo($"Добавлен сервер: {displayName} ({serverAddress})");
                 }
+
+                // Сохраняем конфигурацию с обновленным IP
+                await SaveConfigWithIpAsync();
             }
             catch (Exception ex)
             {
@@ -729,19 +754,49 @@ namespace SS14ServerAdvertiser
 
         private async Task<string> GetExternalIp()
         {
-            try
+            // Список сервисов для получения IP
+            var ipServices = new[]
             {
-                var ipClient = CreateHttpClient(_config.ProxyUrl);
-                var response = await ipClient.GetStringAsync("https://api.ipify.org?format=json");
-                ipClient.Dispose();
-                var json = JsonSerializer.Deserialize<JsonElement>(response);
-                return json.GetProperty("ip").GetString();
-            }
-            catch (Exception ex)
+                "https://api.ipify.org?format=json",
+                "https://ipapi.co/json/",
+                "https://ipinfo.io/json",
+                "https://api.myip.com"
+            };
+
+            foreach (var service in ipServices)
             {
-                _logger.LogError($"Ошибка получения внешнего IP: {ex.Message}");
-                return null;
+                try
+                {
+                    _logger.LogInfo($"Пытаемся получить IP через {service}");
+                    
+                    using var ipClient = CreateHttpClient(_config.ProxyUrl);
+                    var response = await ipClient.GetStringAsync(service);
+                    
+                    var json = JsonSerializer.Deserialize<JsonElement>(response);
+                    
+                    // Пробуем разные поля в зависимости от сервиса
+                    string ip = null;
+                    if (json.TryGetProperty("ip", out var ipElement))
+                        ip = ipElement.GetString();
+                    else if (json.TryGetProperty("query", out var queryElement))
+                        ip = queryElement.GetString();
+                    else if (json.TryGetProperty("origin", out var originElement))
+                        ip = originElement.GetString();
+                    
+                    if (!string.IsNullOrEmpty(ip))
+                    {
+                        _logger.LogInfo($"✓ Получен внешний IP: {ip} через {service}");
+                        return ip;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"✗ Ошибка получения IP через {service}: {ex.Message}");
+                }
             }
+            
+            _logger.LogError("✗ Не удалось получить внешний IP ни через один сервис");
+            return null;
         }
 
         private async void AdvertiseAllServers(object state)
@@ -1073,6 +1128,16 @@ namespace SS14ServerAdvertiser
         /// Таймаут для тестирования прокси в секундах
         /// </summary>
         public int ProxyTestTimeoutSeconds { get; set; } = 10;
+
+        /// <summary>
+        /// Текущий внешний IP адрес
+        /// </summary>
+        public string CurrentExternalIp { get; set; }
+
+        /// <summary>
+        /// Автоматически обновлять IP адрес при запуске
+        /// </summary>
+        public bool AutoUpdateIp { get; set; } = true;
 
     }
 

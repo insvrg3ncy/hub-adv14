@@ -1,7 +1,7 @@
 {
     "MultiServerConfig": {
       "HubUrl": "https://hub.spacestation14.com",
-      "AutoGenerateServers": false,
+      "AutoGenerateServers": true,
       "ServerCount": 13,
       "AdvertisementIntervalMinutes": 2,
       "RequestTimeoutSeconds": 30,

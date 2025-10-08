@@ -13,6 +13,7 @@ import time
 import urllib.parse
 import threading
 import random
+import requests
 from typing import Dict, List, Optional
 
 class ServerInstance:
@@ -30,6 +31,47 @@ class ServerInstance:
 servers = {}
 current_server = None
 server_lock = threading.Lock()
+external_ip = None
+
+def get_external_ip():
+    """Получает внешний IP-адрес"""
+    global external_ip
+    
+    if external_ip:
+        return external_ip
+    
+    ip_services = [
+        "https://api.ipify.org?format=json",
+        "https://ipapi.co/json/",
+        "https://ipinfo.io/json",
+        "https://api.myip.com"
+    ]
+    
+    for service in ip_services:
+        try:
+            print(f"Пытаемся получить IP через {service}")
+            response = requests.get(service, timeout=10)
+            data = response.json()
+            
+            # Пробуем разные поля в зависимости от сервиса
+            ip = None
+            if 'ip' in data:
+                ip = data['ip']
+            elif 'query' in data:
+                ip = data['query']
+            elif 'origin' in data:
+                ip = data['origin']
+            
+            if ip:
+                print(f"✓ Получен внешний IP: {ip} через {service}")
+                external_ip = ip
+                return ip
+                
+        except Exception as e:
+            print(f"✗ Ошибка получения IP через {service}: {e}")
+    
+    print("✗ Не удалось получить внешний IP ни через один сервис")
+    return "194.102.104.184"  # Fallback IP
 
 class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -336,27 +378,28 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
                 "manifest_url": "https://cdn.station14.ru/fork/syndicate-public/version/e301f52e655c57d6df4a0475e75eb4b24f64e0e4/manifest",
                 "manifest_hash": "9AF4E8A392C87A4BDB60CDA83A59AFCE4DEF439FF44E6094DF077295A6964C7E"
             },
-            "desc": f"Сервер {server.name} - Гойда!"
+            "desc": f"zzzzz"
         }
 
     def get_server_status_by_port(self, port: int) -> dict:
         """Возвращает статус сервера в зависимости от порта"""
         # Список названий серверов
         server_names = [
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon", 
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
-            "t.me/VT_SS14 | PJB, go smd, hub will cry soon",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick", 
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, suck my dick",
         ]
         
         # Список карт
@@ -392,8 +435,11 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
         if port < 1212 or port > 1244:
             return self.get_fallback_info()
         
+        # Получаем реальный внешний IP
+        current_ip = get_external_ip()
+        
         return {
-            "connect_address": f"ss14://194.102.104.184:{port}",
+            "connect_address": f"ss14://{current_ip}:{port}",
             "auth": {
                 "mode": "Required",
                 "public_key": "h9/LkNgIKvPihU7/DFM22F+uerH+VIVWyKPXaxZNICc="
@@ -442,8 +488,11 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
 
     def get_fallback_info(self) -> dict:
         """Возвращает fallback информацию"""
+        # Получаем реальный внешний IP
+        current_ip = get_external_ip()
+        
         return {
-            "connect_address": "",
+            "connect_address": f"ss14://{current_ip}:1212",
             "auth": {
                 "mode": "Required",
                 "public_key": "h9/LkNgIKvPihU7/DFM22F+uerH+VIVWyKPXaxZNICc="
@@ -489,91 +538,91 @@ def load_config(config_file: str = 'multiservers.json') -> dict:
         "servers": [
             {
                 "id": "server_1",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1212,
                 "status_file": "status.json",
                 "info_file": "info.json"
             },
             {
                 "id": "server_2", 
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1213,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_3",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon", 
+                "name": "t.me/VT_SS14 | PJB, suck my dick", 
                 "port": 1214,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_4",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1215,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_5",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1216,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_6",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1217,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_7",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1218,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_8",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1219,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_9",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1220,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_10",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1221,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_11",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1222,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_12",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1223,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_13",
-                "name": "t.me/VT_SS14 | PJB go smd, hub will cry soon",
+                "name": "t.me/VT_SS14 | PJB, suck my dick",
                 "port": 1224,
                 "status_file": None,
                 "info_file": None
@@ -607,6 +656,12 @@ def create_handler_class():
     return MultiSS14Handler
 
 if __name__ == "__main__":
+    # Получаем внешний IP при запуске
+    print("🌐 Получаем внешний IP-адрес...")
+    current_ip = get_external_ip()
+    print(f"📍 Внешний IP: {current_ip}")
+    print()
+    
     # Загружаем конфигурацию
     config = load_config()
     
@@ -631,8 +686,10 @@ if __name__ == "__main__":
     print("=" * 70)
     print("🎮 МУЛЬТИСЕРВЕРНЫЙ ФЕЙКОВЫЙ SS14 СЕРВЕР")
     print("=" * 70)
+    print(f"🌐 Внешний IP: {current_ip}")
     print(f"📍 Порты: {', '.join(map(str, server_ports))}")
-    print(f"🌐 Адреса: {', '.join(f'http://0.0.0.0:{port}' for port in server_ports)}")
+    print(f"🔗 SS14 Адреса: {', '.join(f'ss14://{current_ip}:{port}' for port in server_ports)}")
+    print(f"🌐 HTTP Адреса: {', '.join(f'http://0.0.0.0:{port}' for port in server_ports)}")
     print("📡 Endpoints:")
     print("   • /status, /info - стандартные SS14 эндпоинты")
     print("   • /servers - список всех серверов")
