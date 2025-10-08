@@ -1,0 +1,82 @@
+{
+    "MultiServerConfig": {
+      "HubUrl": "https://hub.spacestation14.com",
+      "AutoGenerateServers": false,
+      "ServerCount": 13,
+      "AdvertisementIntervalMinutes": 2,
+      "RequestTimeoutSeconds": 30,
+      "CheckServerAvailability": false,
+      "ProxyUrl": "",
+      "ProxyUsername": "",
+      "ProxyPassword": "",
+      "MaxRetries": 3,
+      "RetryDelayMs": 3000,
+      "AutoDisableProxyOnError": false,
+      "ForceProxyOnly": true,
+      "SkipDirectConnection": true,
+      "Socks5ProxyList": [],
+      "AutoTestProxies": true,
+      "ProxyTestTimeoutSeconds": 10,
+      "Servers": [
+        {
+          "Address": "ss14://194.102.104.184:1212",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1213", 
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1214", 
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },  
+        {
+          "Address": "ss14://194.102.104.184:1215",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1216",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1217",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1218",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1219",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1220",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1221",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1222",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1223",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        },
+        {
+          "Address": "ss14://194.102.104.184:1224",
+          "DisplayName": "t.me/VT_SS14 | PJB, suck my dick"
+        }
+      ]
+    },
+    "Logging": {
+      "LogLevel": {
+        "Default": "Information",
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Information"
+      }
+    }
+  }
