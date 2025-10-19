@@ -44,11 +44,6 @@ namespace SS14ServerAdvertiser
                 }
                 
                 logger.LogInfo($"Интервал рекламы: {multiConfig.AdvertisementIntervalMinutes} мин");
-                
-                if (!string.IsNullOrEmpty(multiConfig.ProxyUrl))
-                {
-                    logger.LogInfo($"Прокси: {multiConfig.ProxyUrl}");
-                }
 
                 // Создаем и запускаем адвертайзер
                 using var advertiser = new MultiServerAdvertiser(multiConfig, logger);
@@ -56,47 +51,17 @@ namespace SS14ServerAdvertiser
                 // Инициализируем серверы
                 advertiser.InitializeServers();
                 
-                // Загружаем прокси из файла
-                advertiser.LoadProxiesFromFile();
-                
-                // Тестируем прокси если включено автоматическое тестирование
-                if (multiConfig.AutoTestProxies && multiConfig.Socks5ProxyList != null && multiConfig.Socks5ProxyList.Any())
-                {
-                    logger.LogInfo("Автоматически тестируем прокси...");
-                    var workingProxies = await advertiser.FindAllWorkingProxiesAsync();
-                    
-                    if (workingProxies != null && workingProxies.Any())
-                    {
-                        logger.LogInfo($"✓ Найдено {workingProxies.Count} рабочих прокси, используем все по очереди");
-                        advertiser.SetWorkingProxies(workingProxies);
-                        advertiser.SwitchToNextProxy();
-                        
-                        // Запускаем таймер рекламы только после успешного тестирования прокси
-                        advertiser.Start();
-                    }
-                    else
-                    {
-                        logger.LogError("✗ НЕ НАЙДЕНО РАБОЧИХ ПРОКСИ - ПРОГРАММА ОСТАНАВЛИВАЕТСЯ!");
-                        logger.LogError("✗ Проверьте список прокси в proxy_list.txt");
-                        return;
-                    }
-                }
-                else
-                {
-                    // Если автоматическое тестирование отключено, запускаем таймер сразу
-                    logger.LogInfo("Автоматическое тестирование прокси отключено, запускаем рекламу...");
-                    advertiser.Start();
-                }
+                // Запускаем таймер рекламы
+                advertiser.Start();
 
                 // Небольшая задержка перед первым тестом подключения
                 await Task.Delay(2000);
                 
-                // Тестируем подключение с первым прокси
+                // Тестируем подключение
                 var connectionOk = await advertiser.TestConnectionAsync();
                 if (!connectionOk)
                 {
                     logger.LogError("✗ ПОДКЛЮЧЕНИЕ НЕ РАБОТАЕТ - ПРОГРАММА ОСТАНАВЛИВАЕТСЯ!");
-                    logger.LogError("✗ Проверьте список прокси в proxy_list.txt");
                     return;
                 }
                 
