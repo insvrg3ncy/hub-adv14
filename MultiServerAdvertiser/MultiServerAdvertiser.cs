@@ -352,15 +352,24 @@ namespace SS14ServerAdvertiser
                                 return;
                             }
                             
-                            _logger.LogError($"✗ Ошибка регистрации {server.DisplayName}: {response.StatusCode} - {errorContent}");
-                            
-                            // Если это не временная ошибка, не повторяем
-                            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest || 
-                                response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
-                                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                            // InternalServerError (500) - временная ошибка сервера, продолжаем попытки
+                            if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                             {
-                                server.ErrorCount++;
-                                return;
+                                _logger.LogWarning($"⚠ Временная ошибка сервера (500) для {server.DisplayName}. Продолжаем попытки...");
+                                // Продолжаем цикл попыток
+                            }
+                            else
+                            {
+                                _logger.LogError($"✗ Ошибка регистрации {server.DisplayName}: {response.StatusCode} - {errorContent}");
+                                
+                                // Если это не временная ошибка, не повторяем
+                                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest || 
+                                    response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                                    response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                                {
+                                    server.ErrorCount++;
+                                    return;
+                                }
                             }
                         }
                     }

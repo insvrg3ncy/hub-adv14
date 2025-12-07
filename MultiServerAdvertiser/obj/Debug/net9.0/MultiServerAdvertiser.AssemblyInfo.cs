@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MultiServerAdvertiser")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+43fa9e17c351589385b149c1ce09d127b242740a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1537b682971d17425a997efc4b036162c4b45789")]
 [assembly: System.Reflection.AssemblyProductAttribute("MultiServerAdvertiser")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MultiServerAdvertiser")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
