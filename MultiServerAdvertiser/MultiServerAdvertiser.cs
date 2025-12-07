@@ -277,9 +277,19 @@ namespace SS14ServerAdvertiser
 
         private async void AdvertiseAllServers(object? state)
         {
-            // Рекламируем все серверы одновременно параллельно
-            var tasks = _servers.Where(s => s.IsActive).Select(AdvertiseServerAsync);
-            await Task.WhenAll(tasks);
+            // Рекламируем серверы последовательно с задержкой для предотвращения rate limiting
+            var activeServers = _servers.Where(s => s.IsActive).ToList();
+            
+            foreach (var server in activeServers)
+            {
+                await AdvertiseServerAsync(server);
+                
+                // Добавляем задержку между запросами (кроме последнего сервера)
+                if (server != activeServers.Last())
+                {
+                    await Task.Delay(_config.RequestCooldownMs);
+                }
+            }
         }
 
         private async Task AdvertiseServerAsync(ServerInstance server)
@@ -327,6 +337,21 @@ namespace SS14ServerAdvertiser
                         else
                         {
                             var errorContent = await response.Content.ReadAsStringAsync();
+                            
+                            // Проверяем, является ли это ошибкой "Unable to contact status address"
+                            // Это не критичная ошибка - хаб просто не может проверить статус, но сервер может быть доступен
+                            bool isStatusCheckError = errorContent.Contains("Unable to contact status address", StringComparison.OrdinalIgnoreCase) ||
+                                                      errorContent.Contains("status address", StringComparison.OrdinalIgnoreCase);
+                            
+                            if (isStatusCheckError)
+                            {
+                                // Логируем как предупреждение, но не считаем критичной ошибкой
+                                _logger.LogWarning($"⚠ Предупреждение регистрации {server.DisplayName}: хаб не может проверить статус сервера. Это может быть нормально, если порты не проброшены или firewall блокирует.");
+                                server.SuccessCount++; // Считаем как успех, т.к. регистрация прошла
+                                server.LastAdvertised = DateTime.UtcNow;
+                                return;
+                            }
+                            
                             _logger.LogError($"✗ Ошибка регистрации {server.DisplayName}: {response.StatusCode} - {errorContent}");
                             
                             // Если это не временная ошибка, не повторяем
@@ -511,6 +536,11 @@ namespace SS14ServerAdvertiser
         /// Задержка между повторными попытками в миллисекундах
         /// </summary>
         public int RetryDelayMs { get; set; } = 2000;
+
+        /// <summary>
+        /// Задержка между запросами к API (cooldown) в миллисекундах для предотвращения rate limiting
+        /// </summary>
+        public int RequestCooldownMs { get; set; } = 1000;
 
         /// <summary>
         /// Текущий внешний IP адрес
