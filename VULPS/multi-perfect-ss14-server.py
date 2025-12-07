@@ -385,21 +385,19 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
         """Возвращает статус сервера в зависимости от порта"""
         # Список названий серверов
         server_names = [
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick", 
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
-            "t.me/VT_SS14 | PJB, suck my dick",
+            "t.me/VT_SS14 | PJB, алло?",
+            "t.me/VT_SS14 | Слоны в бриг",
+            "t.me/VT_SS14 | zzzzzzzzz",
+            "t.me/VT_SS14 | MakeSS14GreatAgain88",
+            "t.me/VT_SS14 | Слоны уже в бриге?",
+            "t.me/VT_SS14 | Зайдите в ТГК плиз",
+            "t.me/VT_SS14 | Скоро будем делать веселуху",
+            "t.me/VT_SS14 | *purrs*",
+            "t.me/VT_SS14 | Ну сделайте вы уже защиту в хабе...",
+            "t.me/VT_SS14 | Возьмите педалью луст статион 18+",
+            "t.me/VT_SS14 | t.me/VT_SS14 | чё ещё написать сюда?",
+            "t.me/VT_SS14 | t.me/VT_SS14 | Дикие вульпы атакуют СексСтейшон14",
+            "t.me/VT_SS14 | НИКОГДА НЕ ФЛИРТУЙТЕ С АРКАНАМИ В 3 ЧАСА НОЧИ!!!!",
         ]
         
         # Список карт
@@ -538,91 +536,91 @@ def load_config(config_file: str = 'multiservers.json') -> dict:
         "servers": [
             {
                 "id": "server_1",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | PJB, алло?",
                 "port": 1212,
                 "status_file": "status.json",
                 "info_file": "info.json"
             },
             {
                 "id": "server_2", 
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | Слоны в бриг",
                 "port": 1213,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_3",
-                "name": "t.me/VT_SS14 | PJB, suck my dick", 
+                "name": "t.me/VT_SS14 | zzzzzzzzz", 
                 "port": 1214,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_4",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | MakeSS14GreatAgain88",
                 "port": 1215,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_5",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | Слоны уже в бриге?",
                 "port": 1216,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_6",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | Зайдите в ТГК плиз",
                 "port": 1217,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_7",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | Скоро будем делать веселуху",
                 "port": 1218,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_8",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | *purrs*",
                 "port": 1219,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_9",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | Ну сделайте вы уже защиту в хабе...",
                 "port": 1220,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_10",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | Возьмите педалью луст статион 18+",
                 "port": 1221,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_11",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | t.me/VT_SS14 | чё ещё написать сюда?",
                 "port": 1222,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_12",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | t.me/VT_SS14 | Дикие вульпы атакуют СексСтейшон14",
                 "port": 1223,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_13",
-                "name": "t.me/VT_SS14 | PJB, suck my dick",
+                "name": "t.me/VT_SS14 | НИКОГДА НЕ ФЛИРТУЙТЕ С АРКАНАМИ В 3 ЧАСА НОЧИ!!!!",
                 "port": 1224,
                 "status_file": None,
                 "info_file": None
