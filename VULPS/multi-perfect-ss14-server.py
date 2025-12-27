@@ -456,7 +456,7 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
             https://discord.gg/rDzUe3D9jm
             https://discord.gg/rDzUe3D9jm
             https://discord.gg/rDzUe3D9jm
-            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm""",
             "links": [
                 {
                     "name": "Discord",

@@ -1,0 +1,97 @@
+{
+  "servers": [
+    {
+      "id": "server_1",
+      "name": "discord.gg/rDzUe3D9jm | НОВЫЙ МАРСИКОРД",
+      "port": 1212,
+      "status_file": "status.json",
+      "info_file": "info.json"
+    },
+    {
+      "id": "server_2",
+      "name": "discord.gg/rDzUe3D9jm | ЧИТЫ ЗЗ14 ЭТО ЧТО ПУТИН",
+      "port": 1213,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_3",
+      "name": "discord.gg/rDzUe3D9jm | ПОФИКШЕННЫЙ МАРZЕЙ",
+      "port": 1214,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_4",
+      "name": "discord.gg/rDzUe3D9jm | ЦЕРБЕРУС ВАРЕ НА ЛИНУКС",
+      "port": 1215,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_5",
+      "name": "discord.gg/rDzUe3D9jm | *гЕТ*ФИКШЕННЫЙ*МАРЗЕЙ*",
+      "port": 1216,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_6",
+      "name": "discord.gg/rDzUe3D9jm | ТОЛЬКО ВАРЫ С МАРСОМ ВИДЯТ",
+      "port": 1217,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_7",
+      "name": "discord.gg/rDzUe3D9jm | ПИДОРАСЫ САМИ СОЗДАЛИ МАРС",
+      "port": 1218,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_8",
+      "name": "discord.gg/rDzUe3D9jm | МАРС ОТ ПУТИНА",
+      "port": 1219,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_9",
+      "name": "discord.gg/rDzUe3D9jm | НАС СМОТРЯТ КАК ЛЮДИ ВОЛКИ",
+      "port": 1220,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_10",
+      "name": "discord.gg/rDzUe3D9jm | autism-recode",
+      "port": 1221,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_11",
+      "name": "discord.gg/rDzUe3D9jm | rawrwrrwrwrwwr~~",
+      "port": 1222,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_12",
+      "name": "discord.gg/rDzUe3D9jm | ZZZZZZZZZZZZZZZ",
+      "port": 1223,
+      "status_file": null,
+      "info_file": null
+    },
+    {
+      "id": "server_13",
+      "name": "discord.gg/rDzUe3D9jm | Закурей ратка платная",
+      "port": 1224,
+      "status_file": null,
+      "info_file": null
+    }
+  ],
+  "default_server": "server_1",
+  "port": 1212
+}
