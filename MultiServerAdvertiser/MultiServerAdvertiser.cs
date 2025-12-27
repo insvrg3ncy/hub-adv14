@@ -318,66 +318,76 @@ namespace SS14ServerAdvertiser
                         // Отправляем рекламу в хаб
                         var advertiseRequest = new { Address = server.Address };
                         var json = JsonSerializer.Serialize(advertiseRequest);
-                        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                        var response = await _httpClient.PostAsync($"{_hubUrl}/api/servers/advertise", content);
                         
-                        if (response.IsSuccessStatusCode)
+                        using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
                         {
-                            server.LastAdvertised = DateTime.UtcNow;
-                            server.SuccessCount++;
-                            server.ErrorCount = 0; // Сбрасываем счетчик ошибок при успехе
+                            var response = await _httpClient.PostAsync($"{_hubUrl}/api/servers/advertise", content);
                             
-                            _logger.LogInfo($"✓ Сервер зарегистрирован: {server.DisplayName}");
-                            return; // Успех, выходим из цикла
-                        }
-                        else
-                        {
-                            var errorContent = await response.Content.ReadAsStringAsync();
-                            
-                            // Проверяем, является ли это ошибкой "Unable to contact status address"
-                            // Это не критичная ошибка - хаб просто не может проверить статус, но сервер может быть доступен
-                            bool isStatusCheckError = errorContent.Contains("Unable to contact status address", StringComparison.OrdinalIgnoreCase) ||
-                                                      errorContent.Contains("status address", StringComparison.OrdinalIgnoreCase);
-                            
-                            if (isStatusCheckError)
+                            try
                             {
-                                // Логируем как предупреждение, но не считаем критичной ошибкой
-                                _logger.LogWarning($"⚠ Предупреждение регистрации {server.DisplayName}: хаб не может проверить статус сервера. Это может быть нормально, если порты не проброшены или firewall блокирует.");
-                                server.SuccessCount++; // Считаем как успех, т.к. регистрация прошла
-                                server.LastAdvertised = DateTime.UtcNow;
-                                server.ErrorCount = 0; // Сбрасываем счетчик ошибок
-                                return;
-                            }
-                            
-                            // InternalServerError (500) - временная ошибка сервера, продолжаем попытки
-                            if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
-                            {
-                                _logger.LogWarning($"⚠ Временная ошибка сервера (500) для {server.DisplayName}. Продолжаем попытки...");
-                                
-                                // Увеличиваем задержку экспоненциально при 500 ошибках (возможный rate limiting)
-                                var exponentialDelay = retryDelayMs * (int)Math.Pow(2, attempt - 1);
-                                exponentialDelay = Math.Min(exponentialDelay, 30000); // Максимум 30 секунд
-                                
-                                if (attempt < maxRetries)
+                                if (response.IsSuccessStatusCode)
                                 {
-                                    _logger.LogInfo($"Ожидание {exponentialDelay} мс перед следующей попыткой...");
-                                    await Task.Delay(exponentialDelay);
+                                    server.LastAdvertised = DateTime.UtcNow;
+                                    server.SuccessCount++;
+                                    server.ErrorCount = 0; // Сбрасываем счетчик ошибок при успехе
+                                    
+                                    _logger.LogInfo($"✓ Сервер зарегистрирован: {server.DisplayName}");
+                                    return; // Успех, выходим из цикла
                                 }
-                                // Продолжаем цикл попыток
-                            }
-                            else
-                            {
-                                _logger.LogError($"✗ Ошибка регистрации {server.DisplayName}: {response.StatusCode} - {errorContent}");
-                                
-                                // Если это не временная ошибка, не повторяем
-                                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest || 
-                                    response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
-                                    response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                                else
                                 {
-                                    server.ErrorCount++;
-                                    return;
+                                    var errorContent = await response.Content.ReadAsStringAsync();
+                                    
+                                    // Проверяем, является ли это ошибкой "Unable to contact status address"
+                                    // Это не критичная ошибка - хаб просто не может проверить статус, но сервер может быть доступен
+                                    bool isStatusCheckError = errorContent.Contains("Unable to contact status address", StringComparison.OrdinalIgnoreCase) ||
+                                                              errorContent.Contains("status address", StringComparison.OrdinalIgnoreCase);
+                                    
+                                    if (isStatusCheckError)
+                                    {
+                                        // Логируем как предупреждение, но не считаем критичной ошибкой
+                                        _logger.LogWarning($"⚠ Предупреждение регистрации {server.DisplayName}: хаб не может проверить статус сервера. Это может быть нормально, если порты не проброшены или firewall блокирует.");
+                                        server.SuccessCount++; // Считаем как успех, т.к. регистрация прошла
+                                        server.LastAdvertised = DateTime.UtcNow;
+                                        server.ErrorCount = 0; // Сбрасываем счетчик ошибок
+                                        return;
+                                    }
+                                    
+                                    // InternalServerError (500) - временная ошибка сервера, продолжаем попытки
+                                    if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                                    {
+                                        _logger.LogWarning($"⚠ Временная ошибка сервера (500) для {server.DisplayName}");
+                                        _logger.LogWarning($"  └─ Тело ответа: {errorContent}");
+                                        
+                                        // Увеличиваем задержку экспоненциально при 500 ошибках
+                                        var exponentialDelay = retryDelayMs * (int)Math.Pow(2, attempt - 1);
+                                        exponentialDelay = Math.Min(exponentialDelay, 30000); // Максимум 30 секунд
+                                        
+                                        if (attempt < maxRetries)
+                                        {
+                                            _logger.LogInfo($"Ожидание {exponentialDelay} мс перед следующей попыткой...");
+                                            await Task.Delay(exponentialDelay);
+                                        }
+                                        // Продолжаем цикл попыток
+                                    }
+                                    else
+                                    {
+                                        _logger.LogError($"✗ Ошибка регистрации {server.DisplayName}: {response.StatusCode} - {errorContent}");
+                                        
+                                        // Если это не временная ошибка, не повторяем
+                                        if (response.StatusCode == System.Net.HttpStatusCode.BadRequest || 
+                                            response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                                            response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                                        {
+                                            server.ErrorCount++;
+                                            return;
+                                        }
+                                    }
                                 }
+                            }
+                            finally
+                            {
+                                response?.Dispose();
                             }
                         }
                     }
