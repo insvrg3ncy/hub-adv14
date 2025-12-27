@@ -314,6 +314,32 @@ namespace SS14ServerAdvertiser
                             _logger.LogWarning($"Сервер недоступен: {server.DisplayName}");
                             return;
                         }
+                        
+                        // Дополнительная проверка: если хаб возвращает 500, возможно сервер недоступен
+                        // Проверяем доступность сервера перед регистрацией для диагностики
+                        if (attempt == 1)
+                        {
+                            var serverStatusUrl = GetServerStatusUrl(server.Address);
+                            _logger.LogInfo($"  └─ Проверяем доступность сервера: {serverStatusUrl}");
+                            try
+                            {
+                                var statusResponse = await _httpClient.GetAsync(serverStatusUrl);
+                                if (statusResponse.IsSuccessStatusCode)
+                                {
+                                    _logger.LogInfo($"  └─ ✓ Сервер доступен (статус: {statusResponse.StatusCode})");
+                                }
+                                else
+                                {
+                                    _logger.LogWarning($"  └─ ⚠ Сервер недоступен или не отвечает (статус: {statusResponse.StatusCode})");
+                                    _logger.LogWarning($"  └─ Это может быть причиной ошибки 500 от хаба");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning($"  └─ ⚠ Не удалось проверить доступность сервера: {ex.Message}");
+                                _logger.LogWarning($"  └─ Хаб может не суметь проверить статус сервера, что приведет к ошибке 500");
+                            }
+                        }
 
                         // Отправляем рекламу в хаб
                         var advertiseRequest = new { Address = server.Address };
@@ -414,6 +440,16 @@ namespace SS14ServerAdvertiser
                                             server.LastAdvertised = DateTime.UtcNow; // Обновляем время последней рекламы
                                             server.ErrorCount = 0;
                                             return; // Считаем как успех
+                                        }
+                                        
+                                        // Если это первая попытка и хаб возвращает 500 с пустым телом,
+                                        // возможно хаб не может проверить доступность сервера
+                                        // В этом случае считаем это как предупреждение, но не критичную ошибку
+                                        if (attempt == 1 && string.IsNullOrEmpty(errorContent))
+                                        {
+                                            _logger.LogWarning($"⚠ Хаб вернул ошибку 500 для {server.DisplayName} при первой попытке регистрации.");
+                                            _logger.LogWarning($"  └─ Возможно, хаб не может проверить доступность сервера (порты закрыты, firewall и т.д.)");
+                                            _logger.LogWarning($"  └─ Считаем это как предупреждение, но продолжаем попытки...");
                                         }
                                         
                                         _logger.LogWarning($"⚠ Временная ошибка сервера (500) для {server.DisplayName}");
