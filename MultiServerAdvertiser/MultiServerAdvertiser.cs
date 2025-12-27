@@ -20,6 +20,8 @@ namespace SS14ServerAdvertiser
         private readonly MultiServerConfig _config;
         private readonly ILogger _logger;
         private readonly List<ServerInstance> _servers;
+        private readonly HttpClient _httpClient;
+        private readonly SemaphoreSlim _requestSemaphore;
 
         public MultiServerAdvertiser(MultiServerConfig config, ILogger? logger = null)
         {
@@ -27,27 +29,16 @@ namespace SS14ServerAdvertiser
             _logger = logger ?? new ConsoleLogger();
             _hubUrl = config.HubUrl.TrimEnd('/');
             _servers = new List<ServerInstance>();
-        }
-
-        private HttpClient CreateHttpClient()
-        {
-            var client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(_config.RequestTimeoutSeconds);
-            client.DefaultRequestHeaders.Add("User-Agent", "SS14MultiServerAdvertiser/1.0");
+            
+            // Создаем один переиспользуемый HttpClient для всех запросов
+            _httpClient = new HttpClient();
+            _httpClient.Timeout = TimeSpan.FromSeconds(_config.RequestTimeoutSeconds);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "SS14MultiServerAdvertiser/1.0");
+            
+            // Семафор для ограничения количества одновременных запросов
+            _requestSemaphore = new SemaphoreSlim(1, 1); // Только один запрос одновременно
             
             _logger.LogInfo($"HttpClient timeout установлен: {_config.RequestTimeoutSeconds} секунд");
-            return client;
-        }
-
-        /// <summary>
-        /// Получает HttpClient для конкретного сервера
-        /// </summary>
-        private HttpClient GetHttpClientForServer(string serverAddress)
-        {
-            // Всегда создаем новый HttpClient для каждого запроса
-            // Это предотвращает проблемы с disposed объектами
-            _logger.LogInfo($"Создаем HttpClient для сервера: {serverAddress}");
-            return CreateHttpClient();
         }
 
         /// <summary>
@@ -60,9 +51,7 @@ namespace SS14ServerAdvertiser
                 _logger.LogInfo("Тестируем подключение к хабу...");
                 
                 // Пробуем простой GET запрос к хабу
-                var testClient = CreateHttpClient();
-                var response = await testClient.GetAsync($"{_hubUrl}/api/servers");
-                testClient.Dispose();
+                var response = await _httpClient.GetAsync($"{_hubUrl}/api/servers");
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -127,9 +116,7 @@ namespace SS14ServerAdvertiser
         {
             try
             {
-                var switchClient = CreateHttpClient();
-                var response = await switchClient.GetAsync($"{_hubUrl.Replace("hub.spacestation14.com", "localhost:1218")}/switch?id={serverId}");
-                switchClient.Dispose();
+                var response = await _httpClient.GetAsync($"{_hubUrl.Replace("hub.spacestation14.com", "localhost:1218")}/switch?id={serverId}");
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInfo($"✓ Переключились на сервер: {serverId}");
@@ -245,8 +232,7 @@ namespace SS14ServerAdvertiser
                 {
                     _logger.LogInfo($"Пытаемся получить IP через {service}");
                     
-                    using var ipClient = CreateHttpClient();
-                    var response = await ipClient.GetStringAsync(service);
+                    var response = await _httpClient.GetStringAsync(service);
                     
                     var json = JsonSerializer.Deserialize<JsonElement>(response);
                     
@@ -284,17 +270,27 @@ namespace SS14ServerAdvertiser
             {
                 await AdvertiseServerAsync(server);
                 
-                // Добавляем задержку между запросами (кроме последнего сервера)
+                // Добавляем задержку между запросами для предотвращения rate limiting
+                // Увеличиваем задержку, если были ошибки в предыдущих запросах
+                var delay = _config.RequestCooldownMs;
+                if (server.ErrorCount > 0)
+                {
+                    // Увеличиваем задержку при наличии ошибок
+                    delay = Math.Max(delay, _config.RequestCooldownMs * 2);
+                }
+                
                 if (server != activeServers.Last())
                 {
-                    await Task.Delay(_config.RequestCooldownMs);
+                    await Task.Delay(delay);
                 }
             }
         }
 
         private async Task AdvertiseServerAsync(ServerInstance server)
         {
-            using (var httpClient = GetHttpClientForServer(server.Address))
+            // Используем семафор для ограничения количества одновременных запросов
+            await _requestSemaphore.WaitAsync();
+            try
             {
                 var maxRetries = _config.MaxRetries;
                 var retryDelayMs = _config.RetryDelayMs;
@@ -324,12 +320,13 @@ namespace SS14ServerAdvertiser
                         var json = JsonSerializer.Serialize(advertiseRequest);
                         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                        var response = await httpClient.PostAsync($"{_hubUrl}/api/servers/advertise", content);
+                        var response = await _httpClient.PostAsync($"{_hubUrl}/api/servers/advertise", content);
                         
                         if (response.IsSuccessStatusCode)
                         {
                             server.LastAdvertised = DateTime.UtcNow;
                             server.SuccessCount++;
+                            server.ErrorCount = 0; // Сбрасываем счетчик ошибок при успехе
                             
                             _logger.LogInfo($"✓ Сервер зарегистрирован: {server.DisplayName}");
                             return; // Успех, выходим из цикла
@@ -349,6 +346,7 @@ namespace SS14ServerAdvertiser
                                 _logger.LogWarning($"⚠ Предупреждение регистрации {server.DisplayName}: хаб не может проверить статус сервера. Это может быть нормально, если порты не проброшены или firewall блокирует.");
                                 server.SuccessCount++; // Считаем как успех, т.к. регистрация прошла
                                 server.LastAdvertised = DateTime.UtcNow;
+                                server.ErrorCount = 0; // Сбрасываем счетчик ошибок
                                 return;
                             }
                             
@@ -356,6 +354,16 @@ namespace SS14ServerAdvertiser
                             if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                             {
                                 _logger.LogWarning($"⚠ Временная ошибка сервера (500) для {server.DisplayName}. Продолжаем попытки...");
+                                
+                                // Увеличиваем задержку экспоненциально при 500 ошибках (возможный rate limiting)
+                                var exponentialDelay = retryDelayMs * (int)Math.Pow(2, attempt - 1);
+                                exponentialDelay = Math.Min(exponentialDelay, 30000); // Максимум 30 секунд
+                                
+                                if (attempt < maxRetries)
+                                {
+                                    _logger.LogInfo($"Ожидание {exponentialDelay} мс перед следующей попыткой...");
+                                    await Task.Delay(exponentialDelay);
+                                }
                                 // Продолжаем цикл попыток
                             }
                             else
@@ -393,13 +401,19 @@ namespace SS14ServerAdvertiser
                     // Если это не последняя попытка, ждем перед повтором
                     if (attempt < maxRetries)
                     {
-                        await Task.Delay(retryDelayMs);
+                        // Используем экспоненциальную задержку для всех типов ошибок
+                        var delay = retryDelayMs * attempt;
+                        await Task.Delay(delay);
                     }
                 }
                 
                 // Если все попытки исчерпаны
                 server.ErrorCount++;
                 _logger.LogError($"✗ Все попытки исчерпаны для сервера: {server.DisplayName}");
+            }
+            finally
+            {
+                _requestSemaphore.Release();
             }
         }
 
@@ -408,9 +422,7 @@ namespace SS14ServerAdvertiser
             try
             {
                 var statusUrl = GetServerStatusUrl(serverAddress);
-                var testClient = CreateHttpClient();
-                var response = await testClient.GetAsync(statusUrl);
-                testClient.Dispose();
+                var response = await _httpClient.GetAsync(statusUrl);
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -493,6 +505,8 @@ namespace SS14ServerAdvertiser
         public void Dispose()
         {
             Stop();
+            _httpClient?.Dispose();
+            _requestSemaphore?.Dispose();
         }
     }
 

@@ -8,6 +8,7 @@
       "CheckServerAvailability": false,
       "MaxRetries": 3,
       "RetryDelayMs": 3000,
+      "RequestCooldownMs": 2000,
       "Servers": [
         {
           "Address": "ss14://144.31.12.42:1212",
