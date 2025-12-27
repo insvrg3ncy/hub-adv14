@@ -319,12 +319,36 @@ namespace SS14ServerAdvertiser
                         var advertiseRequest = new { Address = server.Address };
                         var json = JsonSerializer.Serialize(advertiseRequest);
                         
+                        if (attempt == 1)
+                        {
+                            _logger.LogInfo($"  └─ Отправляем JSON: {json}");
+                        }
+                        
                         using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
                         {
-                            var response = await _httpClient.PostAsync($"{_hubUrl}/api/servers/advertise", content);
+                            var requestUri = $"{_hubUrl}/api/servers/advertise";
+                            
+                            // Создаем запрос с заголовком Connection: close для предотвращения переиспользования соединений
+                            using (var request = new HttpRequestMessage(HttpMethod.Post, requestUri))
+                            {
+                                request.Content = content;
+                                request.Headers.ConnectionClose = true; // Закрываем соединение после запроса
+                                
+                                var response = await _httpClient.SendAsync(request);
                             
                             try
                             {
+                                // Логируем заголовки ответа при ошибке
+                                if (!response.IsSuccessStatusCode)
+                                {
+                                    _logger.LogWarning($"  └─ Статус код: {response.StatusCode}");
+                                    _logger.LogWarning($"  └─ Заголовки ответа:");
+                                    foreach (var header in response.Headers)
+                                    {
+                                        _logger.LogWarning($"      {header.Key}: {string.Join(", ", header.Value)}");
+                                    }
+                                }
+                                
                                 if (response.IsSuccessStatusCode)
                                 {
                                     server.LastAdvertised = DateTime.UtcNow;
@@ -336,12 +360,35 @@ namespace SS14ServerAdvertiser
                                 }
                                 else
                                 {
-                                    var errorContent = await response.Content.ReadAsStringAsync();
+                                    string errorContent = string.Empty;
+                                    
+                                    // Проверяем, есть ли контент для чтения
+                                    if (response.Content != null)
+                                    {
+                                        try
+                                        {
+                                            errorContent = await response.Content.ReadAsStringAsync();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            _logger.LogWarning($"  └─ Не удалось прочитать тело ответа: {ex.Message}");
+                                        }
+                                    }
+                                    
+                                    if (string.IsNullOrEmpty(errorContent))
+                                    {
+                                        _logger.LogWarning($"  └─ Тело ответа пустое или отсутствует");
+                                    }
+                                    else
+                                    {
+                                        _logger.LogWarning($"  └─ Тело ответа: {errorContent}");
+                                    }
                                     
                                     // Проверяем, является ли это ошибкой "Unable to contact status address"
                                     // Это не критичная ошибка - хаб просто не может проверить статус, но сервер может быть доступен
-                                    bool isStatusCheckError = errorContent.Contains("Unable to contact status address", StringComparison.OrdinalIgnoreCase) ||
-                                                              errorContent.Contains("status address", StringComparison.OrdinalIgnoreCase);
+                                    bool isStatusCheckError = !string.IsNullOrEmpty(errorContent) && 
+                                                              (errorContent.Contains("Unable to contact status address", StringComparison.OrdinalIgnoreCase) ||
+                                                               errorContent.Contains("status address", StringComparison.OrdinalIgnoreCase));
                                     
                                     if (isStatusCheckError)
                                     {
@@ -357,7 +404,6 @@ namespace SS14ServerAdvertiser
                                     if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                                     {
                                         _logger.LogWarning($"⚠ Временная ошибка сервера (500) для {server.DisplayName}");
-                                        _logger.LogWarning($"  └─ Тело ответа: {errorContent}");
                                         
                                         // Увеличиваем задержку экспоненциально при 500 ошибках
                                         var exponentialDelay = retryDelayMs * (int)Math.Pow(2, attempt - 1);
@@ -388,6 +434,7 @@ namespace SS14ServerAdvertiser
                             finally
                             {
                                 response?.Dispose();
+                            }
                             }
                         }
                     }
