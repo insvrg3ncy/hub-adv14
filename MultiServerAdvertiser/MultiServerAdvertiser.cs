@@ -400,9 +400,22 @@ namespace SS14ServerAdvertiser
                                         return;
                                     }
                                     
-                                    // InternalServerError (500) - временная ошибка сервера, продолжаем попытки
+                                    // InternalServerError (500) - временная ошибка сервера
                                     if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                                     {
+                                        // Если сервер был успешно зарегистрирован ранее и прошло не слишком много времени,
+                                        // то 500 может означать, что хаб не может обработать повторную регистрацию
+                                        // В этом случае считаем это как успех (сервер уже зарегистрирован)
+                                        if (server.LastAdvertised != DateTime.MinValue && 
+                                            (DateTime.UtcNow - server.LastAdvertised).TotalMinutes < _config.AdvertisementIntervalMinutes * 2)
+                                        {
+                                            _logger.LogWarning($"⚠ Получена ошибка 500 для {server.DisplayName}, но сервер был зарегистрирован ранее. Считаем как успех (сервер уже в хабе).");
+                                            server.SuccessCount++;
+                                            server.LastAdvertised = DateTime.UtcNow; // Обновляем время последней рекламы
+                                            server.ErrorCount = 0;
+                                            return; // Считаем как успех
+                                        }
+                                        
                                         _logger.LogWarning($"⚠ Временная ошибка сервера (500) для {server.DisplayName}");
                                         
                                         // Увеличиваем задержку экспоненциально при 500 ошибках
