@@ -71,7 +71,7 @@ def get_external_ip():
             print(f"✗ Ошибка получения IP через {service}: {e}")
     
     print("✗ Не удалось получить внешний IP ни через один сервис")
-    return "194.102.104.184"  # Fallback IP
+    return "144.31.12.42"  # Fallback IP
 
 class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -378,26 +378,26 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
                 "manifest_url": "https://cdn.station14.ru/fork/syndicate-public/version/e301f52e655c57d6df4a0475e75eb4b24f64e0e4/manifest",
                 "manifest_hash": "9AF4E8A392C87A4BDB60CDA83A59AFCE4DEF439FF44E6094DF077295A6964C7E"
             },
-            "desc": f"zzzzz"
+            "desc": f"https://discord.gg/rDzUe3D9jm"
         }
 
     def get_server_status_by_port(self, port: int) -> dict:
         """Возвращает статус сервера в зависимости от порта"""
         # Список названий серверов
         server_names = [
-            "t.me/VT_SS14 | PJB, алло?",
-            "t.me/VT_SS14 | Слоны в бриг",
-            "t.me/VT_SS14 | zzzzzzzzz",
-            "t.me/VT_SS14 | MakeSS14GreatAgain88",
-            "t.me/VT_SS14 | Слоны уже в бриге?",
-            "t.me/VT_SS14 | Зайдите в ТГК плиз",
-            "t.me/VT_SS14 | Скоро будем делать веселуху",
-            "t.me/VT_SS14 | *purrs*",
-            "t.me/VT_SS14 | Ну сделайте вы уже защиту в хабе...",
-            "t.me/VT_SS14 | Возьмите педалью луст статион 18+",
-            "t.me/VT_SS14 | t.me/VT_SS14 | чё ещё написать сюда?",
-            "t.me/VT_SS14 | t.me/VT_SS14 | Дикие вульпы атакуют СексСтейшон14",
-            "t.me/VT_SS14 | НИКОГДА НЕ ФЛИРТУЙТЕ С АРКАНАМИ В 3 ЧАСА НОЧИ!!!!",
+            "discord.gg/rDzUe3D9jm | НОВЫЙ МАРСИКОРД",
+            "discord.gg/rDzUe3D9jm | ЧИТЫ ЗЗ14 ЭТО ЧТО ПУТИН",
+            "discord.gg/rDzUe3D9jm | ПОФИКШЕННЫЙ МАРZЕЙ",
+            "discord.gg/rDzUe3D9jm | ЦЕРБЕРУС ВАРЕ НА ЛИНУКС",
+            "discord.gg/rDzUe3D9jm | *гЕТ*ФИКШЕННЫЙ*МАРЗЕЙ*",
+            "discord.gg/rDzUe3D9jm | ТОЛЬКО ВАРЫ С МАРСОМ ВИДЯТ",
+            "discord.gg/rDzUe3D9jm | ПИДОРАСЫ САМИ СОЗДАЛИ МАРС",
+            "discord.gg/rDzUe3D9jm | МАРС ОТ ПУТИНА",
+            "discord.gg/rDzUe3D9jm | НАС СМОТРЯТ КАК ЛЮДИ ВОЛКИ",
+            "discord.gg/rDzUe3D9jm | autism-recode",
+            "discord.gg/rDzUe3D9jm | rawrwrrwrwrwwr~~",
+            "discord.gg/rDzUe3D9jm | ZZZZZZZZZZZZZZZ",
+            "discord.gg/rDzUe3D9jm | Закурей ратка платная",
         ]
         
         # Список карт
@@ -452,19 +452,15 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
                 "manifest_download_url": "https://cdn.station14.ru/fork/syndicate-public/version/e301f52e655c57d6df4a0475e75eb4b24f64e0e4/download",
                 "manifest_hash": "9AF4E8A392C87A4BDB60CDA83A59AFCE4DEF439FF44E6094DF077295A6964C7E"
             },
-            "desc": f"""https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14   
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14""",
+            "desc": f"""https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
             "links": [
                 {
-                    "name": "Telegram",
-                    "url": "https://t.me/VT_SS14"
+                    "name": "Discord",
+                    "url": "https://discord.gg/rDzUe3D9jm"
                 }
             ]
         }
@@ -506,19 +502,21 @@ class MultiSS14Handler(http.server.BaseHTTPRequestHandler):
                 "manifest_url": "https://cdn.station14.ru/fork/syndicate-public/version/e301f52e655c57d6df4a0475e75eb4b24f64e0e4/manifest",
                 "manifest_hash": "9AF4E8A392C87A4BDB60CDA83A59AFCE4DEF439FF44E6094DF077295A6964C7E"
             },
-            "desc": f"""https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14   
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14
-                    https://t.me/VT_SS14""",
+            "desc": f"""https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm
+            https://discord.gg/rDzUe3D9jm""",
             "links": [
                 {
-                    "name": "Telegram",
-                    "url": "https://t.me/VT_SS14"
+                    "name": "Discord",
+                    "url": "https://discord.gg/rDzUe3D9jm"
                 }
             ]
         }
@@ -536,91 +534,91 @@ def load_config(config_file: str = 'multiservers.json') -> dict:
         "servers": [
             {
                 "id": "server_1",
-                "name": "t.me/VT_SS14 | PJB, алло?",
+                "name": "discord.gg/rDzUe3D9jm | НОВЫЙ МАРСИКОРД",
                 "port": 1212,
                 "status_file": "status.json",
                 "info_file": "info.json"
             },
             {
                 "id": "server_2", 
-                "name": "t.me/VT_SS14 | Слоны в бриг",
+                "name": "discord.gg/rDzUe3D9jm | ЧИТЫ ЗЗ14 ЭТО ЧТО ПУТИН",
                 "port": 1213,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_3",
-                "name": "t.me/VT_SS14 | zzzzzzzzz", 
+                "name": "discord.gg/rDzUe3D9jm | ПОФИКШЕННЫЙ МАРZЕЙ", 
                 "port": 1214,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_4",
-                "name": "t.me/VT_SS14 | MakeSS14GreatAgain88",
+                "name": "discord.gg/rDzUe3D9jm | ЦЕРБЕРУС ВАРЕ НА ЛИНУКС",
                 "port": 1215,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_5",
-                "name": "t.me/VT_SS14 | Слоны уже в бриге?",
+                "name": "discord.gg/rDzUe3D9jm | *гЕТ*ФИКШЕННЫЙ*МАРЗЕЙ*",
                 "port": 1216,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_6",
-                "name": "t.me/VT_SS14 | Зайдите в ТГК плиз",
+                "name": "discord.gg/rDzUe3D9jm | ТОЛЬКО ВАРЫ С МАРСОМ ВИДЯТ",
                 "port": 1217,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_7",
-                "name": "t.me/VT_SS14 | Скоро будем делать веселуху",
+                "name": "discord.gg/rDzUe3D9jm | ПИДОРАСЫ САМИ СОЗДАЛИ МАРС",
                 "port": 1218,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_8",
-                "name": "t.me/VT_SS14 | *purrs*",
+                "name": "discord.gg/rDzUe3D9jm | МАРС ОТ ПУТИНА",
                 "port": 1219,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_9",
-                "name": "t.me/VT_SS14 | Ну сделайте вы уже защиту в хабе...",
+                "name": "discord.gg/rDzUe3D9jm | НАС СМОТРЯТ КАК ЛЮДИ ВОЛКИ",
                 "port": 1220,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_10",
-                "name": "t.me/VT_SS14 | Возьмите педалью луст статион 18+",
+                "name": "discord.gg/rDzUe3D9jm | autism-recode",
                 "port": 1221,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_11",
-                "name": "t.me/VT_SS14 | t.me/VT_SS14 | чё ещё написать сюда?",
+                "name": "discord.gg/rDzUe3D9jm | rawrwrrwrwrwwr~~",
                 "port": 1222,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_12",
-                "name": "t.me/VT_SS14 | t.me/VT_SS14 | Дикие вульпы атакуют СексСтейшон14",
+                "name": "discord.gg/rDzUe3D9jm | ZZZZZZZZZZZZZZZ",
                 "port": 1223,
                 "status_file": None,
                 "info_file": None
             },
             {
                 "id": "server_13",
-                "name": "t.me/VT_SS14 | НИКОГДА НЕ ФЛИРТУЙТЕ С АРКАНАМИ В 3 ЧАСА НОЧИ!!!!",
+                "name": "discord.gg/rDzUe3D9jm | Закурей ратка платная",
                 "port": 1224,
                 "status_file": None,
                 "info_file": None
